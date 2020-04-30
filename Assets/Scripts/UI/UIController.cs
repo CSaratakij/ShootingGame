@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-namespace MyGame.Network
+namespace MyGame
 {
     public class UIController : MonoBehaviour
     {
@@ -17,7 +17,10 @@ namespace MyGame.Network
         public enum UIView
         {
             LoginMenu,
-            MainMenu
+            MainMenu,
+            InGameMenu,
+            PauseMenu,
+            LoadingScreen
         }
 
         UIView currentView = UIView.LoginMenu;
@@ -97,6 +100,16 @@ namespace MyGame.Network
         public void ShowMainMenu()
         {
             Show(UIView.MainMenu);
+        }
+
+        public void ShowLoadingScreen()
+        {
+            Show(UIView.LoadingScreen);
+        }
+
+        public void ShowInGameMenu()
+        {
+            Show(UIView.InGameMenu);
         }
     }
 }

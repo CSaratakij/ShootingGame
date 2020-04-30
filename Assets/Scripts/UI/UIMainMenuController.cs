@@ -1,5 +1,4 @@
-﻿//todo: fetch user info once press in pause menu about their stats in range practice
-using System;
+﻿using System;
 using TMPro;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,12 +8,17 @@ using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using MyGame.Network;
 
-namespace MyGame.Network
+namespace MyGame
 {
     [RequireComponent(typeof(RestClient))]
     public class UIMainMenuController : MonoBehaviour
     {
+        [Header("General")]
+        [SerializeField]
+        UIController uIController;
+
         [Header("MainMenu")]
         [SerializeField]
         TextMeshProUGUI lblDisplayName;
@@ -33,6 +37,9 @@ namespace MyGame.Network
 
         [SerializeField]
         Button btnFindLobby;
+
+        [SerializeField]
+        Button btnRangePractice;
 
         [SerializeField]
         Button btnToggleChat;
@@ -127,6 +134,13 @@ namespace MyGame.Network
                     }
 
                     canFindLobby = true;
+                });
+            });
+
+            btnRangePractice.onClick.AddListener(() => {
+                uIController.ShowLoadingScreen();
+                Global.LoadScene(SceneIndex.RangePractice, () => {
+                    uIController.ShowInGameMenu();
                 });
             });
 

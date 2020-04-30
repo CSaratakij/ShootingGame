@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine.SceneManagement;
 
 namespace MyGame.Network
 {
@@ -28,6 +29,14 @@ namespace MyGame.Network
                    $"IssuedAt : {IssuedAt}\n" +
                    $"UserID : {UserID}\n" +
                    $"DisplayName : {DisplayName}\n";
+        }
+
+        public static void LoadScene(SceneIndex target, Action callback)
+        {
+            //if load complete..
+            // callback?.Invoke();
+            SceneManager.LoadScene((int)target);
+            callback?.Invoke();
         }
     }
 }

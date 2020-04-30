@@ -9,8 +9,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.Networking;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using MyGame.Network;
 
-namespace MyGame.Network
+namespace MyGame
 {
     [RequireComponent(typeof(RestClient))]
     public class UILoginMenuController : MonoBehaviour
