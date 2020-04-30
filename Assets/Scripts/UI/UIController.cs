@@ -16,7 +16,7 @@ namespace MyGame
 
         public enum UIView
         {
-            LoginMenu,
+            LoginMenu = 0,
             MainMenu,
             InGameMenu,
             PauseMenu,

@@ -139,7 +139,7 @@ namespace MyGame
 
             btnRangePractice.onClick.AddListener(() => {
                 uIController.ShowLoadingScreen();
-                Global.LoadScene(SceneIndex.RangePractice, () => {
+                SceneLoader.LoadScene(SceneIndex.RangePractice, () => {
                     uIController.ShowInGameMenu();
                 });
             });
