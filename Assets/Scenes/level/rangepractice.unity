@@ -369,7 +369,7 @@ MonoBehaviour:
   networkType: 0
   isControlable: 1
   moveSpeed: 6
-  runSpeedMultipiler: 1.6
+  runSpeedMultipiler: 1.4
   jumpSpeed: 12
   gravity: 40
   rotationDamp: 0.1

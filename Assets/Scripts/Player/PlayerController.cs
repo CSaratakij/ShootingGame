@@ -70,7 +70,7 @@ namespace MyGame
 
         void LateUpdate()
         {
-            RotateHandler();
+            FacingHandler();
         }
 
         void Initialize()
@@ -130,7 +130,7 @@ namespace MyGame
             Cursor.visible = value;
         }
 
-        void RotateHandler()
+        void FacingHandler()
         {
             bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.1f) || (AimState.Aim == aimState);
 
@@ -138,11 +138,43 @@ namespace MyGame
             {
                 Quaternion targetRotation = rotationBasis.rotation;
 
-                bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < -0.1f);
+                bool shouldForceFacingBasis = (AimState.Aim == aimState);
 
-                if (shouldReverseRotation)
+                if (!shouldForceFacingBasis)
                 {
-                    targetRotation *= Quaternion.Euler(0, 180.0f, 0);
+                    float absHorizontal = Mathf.Abs(inputVector.x);
+                    float absForward = Mathf.Abs(inputVector.z);
+
+                    bool isOnlyPressHorizontal = (absHorizontal > 0.1f) && Mathf.Approximately(absForward, 0.0f);
+                    bool isOnlyPressForward = (absForward > 0.1f) && Mathf.Approximately(absHorizontal, 0.0f);
+
+                    if (isOnlyPressHorizontal)
+                    {
+                        if (inputVector.x > 0.1f)
+                        {
+                            targetRotation *= Quaternion.Euler(0, 90.0f, 0);
+                        }
+                        else if (inputVector.x <= 0.1f)
+                        {
+                            targetRotation *= Quaternion.Euler(0, -90.0f, 0);
+                        }
+                    }
+                    else if (isOnlyPressForward)
+                    {
+                        bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < -0.1f);
+
+                        if (shouldReverseRotation)
+                        {
+                            targetRotation *= Quaternion.Euler(0, 180.0f, 0);
+                        }
+                    }
+                    else
+                    {
+                        if (inputVector.z < -0.1f)
+                        {
+                            targetRotation *= Quaternion.Euler(0, 180.0f, 0);
+                        }
+                    }
                 }
 
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationDamp);
