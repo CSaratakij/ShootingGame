@@ -15,6 +15,15 @@ namespace MyGame
 
         [Header("Setting")]
         [SerializeField]
+        float normalFOV = 60.0f;
+
+        [SerializeField]
+        float zoomFOV = 40.0f;
+
+        [SerializeField]
+        float zoomRate = 100.0f;
+
+        [SerializeField]
         float rotationClamp;
 
         [SerializeField]
@@ -24,6 +33,11 @@ namespace MyGame
         Vector3 offset;
 
         public Transform ExternalBasis => externalBasis;
+
+        float currentZoomFOV;
+        float targetZoomFOV;
+
+        bool shouldToggleZoom;
 
         Vector2 mouseInput;
         Vector3 rotationAxis;
@@ -42,11 +56,14 @@ namespace MyGame
         {
             RotationHandler();
             OrbitHandler();
+            ZoomHandler();
         }
 
         void Initialize()
         {
             externalBasis.parent = null;
+            currentZoomFOV = normalFOV;
+            targetZoomFOV = normalFOV;
         }
 
         void InputHandler()
@@ -79,6 +96,26 @@ namespace MyGame
         {
             var orbitPosition = (transform.rotation * new Vector3(offset.x, offset.y, -offset.z)) + target.position;
             transform.position = orbitPosition;
+        }
+
+        void ZoomHandler()
+        {
+            currentZoomFOV = Mathf.MoveTowards(currentZoomFOV, targetZoomFOV, zoomRate * Time.deltaTime);
+            Camera.main.fieldOfView = currentZoomFOV;
+        }
+
+        public void SetZoomFOV(float normalFOV, float zoomFOV)
+        {
+            this.normalFOV = normalFOV;
+            this.zoomFOV = zoomFOV;
+
+            this.currentZoomFOV = normalFOV;
+            this.targetZoomFOV = normalFOV;
+        }
+
+        public void ToggleZoom(bool value)
+        {
+            targetZoomFOV = value ? zoomFOV : normalFOV;
         }
     }
 }

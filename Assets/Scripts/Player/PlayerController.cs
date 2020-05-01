@@ -45,6 +45,7 @@ namespace MyGame
         public uint ID { get; set; }
 
         float moveSpeedMultipiler = 1.0f;
+        float zoomDistanceMultipiler = 1.0f;
 
         Vector3 inputVector;
         Vector3 velocity;
@@ -76,6 +77,7 @@ namespace MyGame
         {
             camera = Camera.main.GetComponent<ThirdPersonCamera>();
             characterController = GetComponent<CharacterController>();
+
             rotationBasis = camera.ExternalBasis;
         }
 
@@ -93,6 +95,9 @@ namespace MyGame
 
             moveSpeedMultipiler = Input.GetButton("Run") ? runSpeedMultipiler : 1.0f;
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
+
+            bool shouldZoomCamera = (AimState.Aim == aimState);
+            camera.ToggleZoom(shouldZoomCamera);
         }
 
         void MoveHandler()
@@ -127,7 +132,9 @@ namespace MyGame
 
         void RotateHandler()
         {
-            if (inputVector.sqrMagnitude > 0.1f)
+            bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.1f) || (AimState.Aim == aimState);
+
+            if (shouldFacingBasis)
             {
                 Quaternion targetRotation = rotationBasis.rotation;
 
@@ -135,7 +142,7 @@ namespace MyGame
 
                 if (shouldReverseRotation)
                 {
-                    targetRotation *= Quaternion.Euler(0, 180f, 0);
+                    targetRotation *= Quaternion.Euler(0, 180.0f, 0);
                 }
 
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationDamp);

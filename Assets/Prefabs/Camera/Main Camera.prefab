@@ -99,7 +99,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   externalBasis: {fileID: 5014098615004862046}
-  rotationClamp: 0.5
+  normalFOV: 60
+  zoomFOV: 35
+  zoomRate: 120
+  rotationClamp: 0.2
   mouseSensitivity: {x: 1, y: 1}
   offset: {x: 1.2, y: 1.2, z: 3.5}
 --- !u!1 &5014098615004862047
