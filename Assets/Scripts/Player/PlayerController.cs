@@ -10,6 +10,9 @@ namespace MyGame
     {
         [Header("General")]
         [SerializeField]
+        Transform tempDir;
+
+        [SerializeField]
         bool isControlable;
 
         [SerializeField]
@@ -54,6 +57,8 @@ namespace MyGame
         float moveSpeedMultipiler = 1.0f;
         float zoomDistanceMultipiler = 1.0f;
 
+        float nonZeroMoveX = 1.0f;
+
         bool isStartRun = false;
         bool isSwitchCameraSide = false;
 
@@ -97,6 +102,11 @@ namespace MyGame
             inputVector.x = Input.GetAxis("Horizontal");
             inputVector.z = Input.GetAxis("Vertical");
 
+            if (Mathf.Abs(inputVector.x) > 0.0f)
+            {
+                nonZeroMoveX = inputVector.x;
+            }
+
             if (inputVector.sqrMagnitude > 1.0f)
             {
                 inputVector = inputVector.normalized;
@@ -109,6 +119,55 @@ namespace MyGame
 
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
             bool shouldZoomCamera = (AimState.Aim == aimState);
+
+            //if not aim...
+            //hip fire
+            //todo: set ik look at to the hip fire aim if hip fire (cooldown to back to normal with normal spine rotation ik)
+            if (Input.GetButtonDown("Fire1"))
+            {
+                if (AimState.None == aimState)
+                {
+                    var forwardDir = transform.forward;
+                    var relativeVecor = (tempDir.position - transform.position);
+                    var product = Vector3.Dot(forwardDir, relativeVecor);
+
+                    var hipShootType = product <= 2.0f ? 2 : 1;
+
+                    animator.SetFloat("HipShootType", hipShootType);
+                    animator.SetTrigger("HipFire");
+
+                    // var angle = Vector3.Angle(forwardDir, relativeVecor);
+                    // var side = relativeVecor.x > 0.0f ? 1.0f : -1.0f;
+                    // Debug.Log(angle);
+
+                    // humaniodIK.ToggleFireWeapon(true, tempDir.position);
+
+                    // if (angle > 120.0f)
+                    // {
+                        // var rotateAngle = angle - 90.0f;
+                        // rotateAngle *= -side;
+                        // humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, rotateAngle, 0));
+                    // }
+                    // else
+                    // {
+                        // humaniodIK.ToggleFireWeapon(true, Quaternion.identity);
+                    // }
+
+                    //player give their back to crosshair
+                    // if (product < -20.0f)
+                    // {
+                    //     humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, 75, 0));
+                    // }
+                    // else
+                    // {
+                    //     humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, 0, 0));
+                    // }
+                    // Quaternion dir = Quaternion.LookRotation(relativeVecor);
+                    // Quaternion actualDir = Quaternion.Euler(0, dir.eulerAngles.y, 0);
+
+                    // humaniodIK.ToggleFireWeapon(true, relativeVecor.normalized);
+                }
+            }
 
             if (Input.GetButtonDown("Fire2") || Input.GetButtonUp("Fire2"))
             {
@@ -155,6 +214,7 @@ namespace MyGame
             animator.SetBool("IsAim", isAim);
             animator.SetFloat("MoveX", inputVector.x);
             animator.SetFloat("MoveZ", inputVector.z);
+            animator.SetFloat("NonZeroMoveX", nonZeroMoveX);
         }
 
         void MoveHandler()

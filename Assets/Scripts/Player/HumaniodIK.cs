@@ -26,6 +26,7 @@ namespace MyGame
         float rotateRateY = 5.0f;
 
         bool isAiming = false;
+        bool isFireWeapon = false;
 
         float currentAimRotateX;
         float currentAimRotateY;
@@ -35,8 +36,11 @@ namespace MyGame
         Animator animator;
         Transform chestBone;
 
+        Vector3 facingRotation;
+
         enum AnimLayer
         {
+            BaseLayer = 0,
             UpperArm = 1,
             LowerBody
         }
@@ -99,8 +103,8 @@ namespace MyGame
                 animator.SetBoneLocalRotation(HumanBodyBones.Chest, chestRotation);
             }
 
-            bool shouldStopForcingRotate = !isAiming && Mathf.Approximately(currentAimRotateY, 0.0f);
-            if (shouldStopForcingRotate) { return; }
+            bool shouldStopForceRotate = !isAiming && Mathf.Approximately(currentAimRotateY, targetAimRotateY);
+            if (shouldStopForceRotate) { return; }
 
             currentAimRotateY = Mathf.MoveTowards(currentAimRotateY, targetAimRotateY, rotateRateY);
             animator.SetBoneLocalRotation(HumanBodyBones.UpperChest, Quaternion.Euler(0, currentAimRotateY, 0));
@@ -125,6 +129,14 @@ namespace MyGame
         {
             var absTargetAim = Mathf.Abs(targetAimRotateY) * weight;
             targetAimRotateY = value ? -absTargetAim : absTargetAim;
+        }
+
+        // public void ToggleFireWeapon(bool value, Quaternion facingRotation)
+        public void ToggleFireWeapon(bool value, Vector3 facingRotation)
+        {
+            isFireWeapon = value;
+            // this.facingRotation = facingRotation;
+            this.facingRotation = facingRotation;
         }
     }
 }
