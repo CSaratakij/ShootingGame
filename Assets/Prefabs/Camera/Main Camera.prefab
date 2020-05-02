@@ -99,9 +99,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   externalBasis: {fileID: 1543517365937420563}
+  viewSide: 1
   normalFOV: 60
   zoomFOV: 35
   zoomRate: 120
+  zoomOutRate: 3
+  switchSideRate: 5
   rotationClamp: 0.2
   mouseSensitivity: {x: 1, y: 1}
   normalOffset: {x: 1, y: 3.3, z: 3}

@@ -98,13 +98,25 @@ namespace MyGame
             inputVector.y = Input.GetButtonDown("Jump") ? 1.0f : 0.0f;
 
             bool isRunning = (inputVector.sqrMagnitude > 0.0f) && (AimState.None == aimState) && Input.GetButton("Run");
+            moveSpeedMultipiler = isRunning ? runSpeedMultipiler : 1.0f;
+
+            aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
             bool shouldZoomCamera = (AimState.Aim == aimState);
 
-            moveSpeedMultipiler = isRunning ? runSpeedMultipiler : 1.0f;
-            aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
+            if (Input.GetButtonDown("Fire2") || Input.GetButtonUp("Fire2"))
+            {
+                camera.ToggleZoom(shouldZoomCamera);
+            }
 
-            camera.ToggleZoom(shouldZoomCamera);
-            camera.ToggleExtraOffset(isRunning);
+            if (Input.GetButtonDown("Run") || Input.GetButtonUp("Run"))
+            {
+                camera.ToggleExtraOffset(isRunning);
+            }
+
+            if (Input.GetButtonDown("SwitchCamera"))
+            {
+                camera.ToggleViewSide();
+            }
         }
 
         void AnimationHandler()

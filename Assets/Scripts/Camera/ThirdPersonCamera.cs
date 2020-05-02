@@ -15,6 +15,9 @@ namespace MyGame
 
         [Header("Setting")]
         [SerializeField]
+        ViewSide viewSide = ViewSide.Right;
+
+        [SerializeField]
         float normalFOV = 60.0f;
 
         [SerializeField]
@@ -22,6 +25,12 @@ namespace MyGame
 
         [SerializeField]
         float zoomRate = 100.0f;
+
+        [SerializeField]
+        float zoomOutRate = 3.0f;
+
+        [SerializeField]
+        float switchSideRate = 6.0f;
 
         [SerializeField]
         float rotationClamp;
@@ -35,6 +44,12 @@ namespace MyGame
         [SerializeField]
         Vector3 extraOffset;
 
+        enum ViewSide
+        {
+            Right = 1,
+            Left = -1
+        }
+
         public Transform ExternalBasis => externalBasis;
 
         float currentZoomFOV;
@@ -47,6 +62,8 @@ namespace MyGame
 
         Vector3 offset;
         Vector3 currentOffset;
+
+        ViewSide previousViewSide;
 
         void Awake()
         {
@@ -74,6 +91,8 @@ namespace MyGame
 
             offset = normalOffset;
             currentOffset = offset;
+
+            previousViewSide = viewSide;
         }
 
         void InputHandler()
@@ -110,7 +129,20 @@ namespace MyGame
 
         void OffsetHandler()
         {
-            currentOffset = Vector3.MoveTowards(currentOffset, offset, 3.0f * Time.deltaTime);
+            var isViewSideChanged = (previousViewSide != viewSide);
+
+            if (isViewSideChanged)
+            {
+                offset.x = Mathf.Abs(offset.x) * ((int) viewSide);
+                previousViewSide = viewSide;
+            }
+
+            var resultOffset = Vector3.MoveTowards(currentOffset, offset, zoomOutRate * Time.deltaTime);
+            var switchSideOffset = Mathf.MoveTowards(currentOffset.x, offset.x, switchSideRate * Time.deltaTime);
+
+            currentOffset.x = switchSideOffset;
+            currentOffset.y = resultOffset.y;
+            currentOffset.z = resultOffset.z;
         }
 
         void ZoomHandler()
@@ -135,7 +167,15 @@ namespace MyGame
 
         public void ToggleExtraOffset(bool value)
         {
-            offset = value ? extraOffset : normalOffset;
+            var resultOffset = value ? extraOffset : normalOffset;
+            resultOffset.x = Mathf.Abs(resultOffset.x) * ((int) viewSide);
+            offset = resultOffset;
+        }
+
+        public void ToggleViewSide()
+        {
+            previousViewSide = viewSide;
+            viewSide = (viewSide == ViewSide.Right) ? ViewSide.Left : ViewSide.Right;
         }
     }
 }

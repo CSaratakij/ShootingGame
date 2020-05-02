@@ -67,7 +67,7 @@ MonoBehaviour:
   networkType: 0
   animator: {fileID: 1037123237976927292}
   moveSpeed: 6
-  runSpeedMultipiler: 1.4
+  runSpeedMultipiler: 1.5
   jumpSpeed: 12
   gravity: 40
   rotationDamp: 0.1
