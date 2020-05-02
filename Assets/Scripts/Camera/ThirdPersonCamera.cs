@@ -30,7 +30,10 @@ namespace MyGame
         Vector2 mouseSensitivity;
 
         [SerializeField]
-        Vector3 offset;
+        Vector3 normalOffset;
+
+        [SerializeField]
+        Vector3 extraOffset;
 
         public Transform ExternalBasis => externalBasis;
 
@@ -41,6 +44,9 @@ namespace MyGame
 
         Vector2 mouseInput;
         Vector3 rotationAxis;
+
+        Vector3 offset;
+        Vector3 currentOffset;
 
         void Awake()
         {
@@ -56,6 +62,7 @@ namespace MyGame
         {
             RotationHandler();
             OrbitHandler();
+            OffsetHandler();
             ZoomHandler();
         }
 
@@ -64,6 +71,9 @@ namespace MyGame
             externalBasis.parent = null;
             currentZoomFOV = normalFOV;
             targetZoomFOV = normalFOV;
+
+            offset = normalOffset;
+            currentOffset = offset;
         }
 
         void InputHandler()
@@ -94,8 +104,13 @@ namespace MyGame
 
         void OrbitHandler()
         {
-            var orbitPosition = (transform.rotation * new Vector3(offset.x, offset.y, -offset.z)) + target.position;
+            var orbitPosition = (transform.rotation * new Vector3(currentOffset.x, currentOffset.y, -currentOffset.z)) + target.position;
             transform.position = orbitPosition;
+        }
+
+        void OffsetHandler()
+        {
+            currentOffset = Vector3.MoveTowards(currentOffset, offset, 3.0f * Time.deltaTime);
         }
 
         void ZoomHandler()
@@ -116,6 +131,11 @@ namespace MyGame
         public void ToggleZoom(bool value)
         {
             targetZoomFOV = value ? zoomFOV : normalFOV;
+        }
+
+        public void ToggleExtraOffset(bool value)
+        {
+            offset = value ? extraOffset : normalOffset;
         }
     }
 }

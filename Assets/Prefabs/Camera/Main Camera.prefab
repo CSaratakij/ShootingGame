@@ -104,7 +104,8 @@ MonoBehaviour:
   zoomRate: 120
   rotationClamp: 0.2
   mouseSensitivity: {x: 1, y: 1}
-  offset: {x: 1.2, y: 3.3, z: 3}
+  normalOffset: {x: 1, y: 3.3, z: 3}
+  extraOffset: {x: 1, y: 3.3, z: 4}
 --- !u!1 &1543517365937420562
 GameObject:
   m_ObjectHideFlags: 0
