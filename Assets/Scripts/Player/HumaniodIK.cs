@@ -20,14 +20,20 @@ namespace MyGame
         float maxAimRotateY = 25.0f;
 
         [SerializeField]
-        float rotateRate = 5.0f;
+        float rotateDampX = 0.02f;
+
+        [SerializeField]
+        float rotateRateY = 5.0f;
 
         bool isAiming = false;
 
+        float currentAimRotateX;
         float currentAimRotateY;
+
         float targetAimRotateY;
 
         Animator animator;
+        Transform chestBone;
 
         enum AnimLayer
         {
@@ -44,6 +50,7 @@ namespace MyGame
         {
             animator = GetComponent<Animator>();
             currentAimRotateY = maxAimRotateY;
+            chestBone = animator.GetBoneTransform(HumanBodyBones.Chest);
         }
 
         void OnAnimatorIK(int layerIndex)
@@ -83,10 +90,19 @@ namespace MyGame
                 animator.SetLookAtPosition(lookReference.position);
             }
 
+            if (isAiming)
+            {
+                var rotRef = Quaternion.Euler(aimReference.rotation.eulerAngles.x, 0.0f, 0.0f);
+                var rotCurrent = Quaternion.Euler(chestBone.localRotation.eulerAngles.x, 0.0f, 0.0f);
+
+                var chestRotation = Quaternion.Slerp(rotCurrent, rotRef, rotateDampX);
+                animator.SetBoneLocalRotation(HumanBodyBones.Chest, chestRotation);
+            }
+
             bool shouldStopForcingRotate = !isAiming && Mathf.Approximately(currentAimRotateY, 0.0f);
             if (shouldStopForcingRotate) { return; }
 
-            currentAimRotateY = Mathf.MoveTowards(currentAimRotateY, targetAimRotateY, rotateRate);
+            currentAimRotateY = Mathf.MoveTowards(currentAimRotateY, targetAimRotateY, rotateRateY);
             animator.SetBoneLocalRotation(HumanBodyBones.UpperChest, Quaternion.Euler(0, currentAimRotateY, 0));
         }
 

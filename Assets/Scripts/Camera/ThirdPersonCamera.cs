@@ -16,6 +16,9 @@ namespace MyGame
 
         [Header("Setting")]
         [SerializeField]
+        float maxVerticalLookAxis = 35.0f;
+
+        [SerializeField]
         ViewSide viewSide = ViewSide.Right;
 
         [SerializeField]
@@ -104,7 +107,7 @@ namespace MyGame
             rotationAxis.x += -mouseInput.y * mouseSensitivity.x;
             rotationAxis.y += mouseInput.x * mouseSensitivity.y;
 
-            rotationAxis.x = Mathf.Clamp(rotationAxis.x, -40.0f, 30.0f);
+            rotationAxis.x = Mathf.Clamp(rotationAxis.x, -maxVerticalLookAxis, maxVerticalLookAxis);
 
             if (rotationAxis.y > 360.0f)
             {
