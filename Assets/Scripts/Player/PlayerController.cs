@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace MyGame
 {
+    [DisallowMultipleComponent]
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
@@ -16,6 +17,9 @@ namespace MyGame
 
         [SerializeField]
         Animator animator;
+
+        [SerializeField]
+        HumaniodIK humaniodIK;
 
         [Header("Setting")]
         [SerializeField]
@@ -49,6 +53,9 @@ namespace MyGame
 
         float moveSpeedMultipiler = 1.0f;
         float zoomDistanceMultipiler = 1.0f;
+
+        bool isStartRun = false;
+        bool isSwitchCameraSide = false;
 
         Vector3 inputVector;
         Vector3 velocity;
@@ -106,16 +113,33 @@ namespace MyGame
             if (Input.GetButtonDown("Fire2") || Input.GetButtonUp("Fire2"))
             {
                 camera.ToggleZoom(shouldZoomCamera);
+                humaniodIK.ToggleAim(shouldZoomCamera, isSwitchCameraSide);
             }
 
-            if (Input.GetButtonDown("Run") || Input.GetButtonUp("Run"))
+            if (isRunning)
             {
-                camera.ToggleExtraOffset(isRunning);
+                if (!isStartRun)
+                {
+                    camera.ToggleExtraOffset(true);
+                    isStartRun = true;
+                }
+            }
+            else
+            {
+                if (isStartRun)
+                {
+                    camera.ToggleExtraOffset(false);
+                    isStartRun = false;
+                }
             }
 
             if (Input.GetButtonDown("SwitchCamera"))
             {
+                isSwitchCameraSide = !isSwitchCameraSide;
                 camera.ToggleViewSide();
+
+                var weight = isSwitchCameraSide ? 0.0f : 1.0f;
+                humaniodIK.ToggleFlipSide(isSwitchCameraSide, weight);
             }
         }
 

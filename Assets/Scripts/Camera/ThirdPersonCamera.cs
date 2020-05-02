@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace MyGame
 {
+    [DisallowMultipleComponent]
     public class ThirdPersonCamera : MonoBehaviour
     {
         [Header("General")]

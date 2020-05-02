@@ -44,7 +44,7 @@ CharacterController:
   m_IsTrigger: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Height: 4
+  m_Height: 3.8
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
@@ -66,6 +66,7 @@ MonoBehaviour:
   isControlable: 1
   networkType: 0
   animator: {fileID: 1037123237976927292}
+  humaniodIK: {fileID: 1573603070}
   moveSpeed: 6
   runSpeedMultipiler: 1.5
   jumpSpeed: 12
@@ -102,6 +103,22 @@ Transform:
   m_Father: {fileID: 2707838858327991043}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1573603070
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6248111225656882005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb0b4f4d054d336439272ba2e7a2b80a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookReference: {fileID: 0}
+  aimReference: {fileID: 0}
+  maxAimRotateY: 25
+  rotateRate: 5
 --- !u!1001 &2707838857669765724
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -551,6 +568,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b3b77912068820049b309b33cb50b346, type: 3}
+--- !u!1 &6248111225656882005 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -927199367670048503, guid: b3b77912068820049b309b33cb50b346,
+    type: 3}
+  m_PrefabInstance: {fileID: 2707838857669765724}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &6984689219285172550 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -4216859302048453862, guid: b3b77912068820049b309b33cb50b346,
