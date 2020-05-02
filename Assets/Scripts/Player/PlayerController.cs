@@ -132,13 +132,20 @@ namespace MyGame
 
                 if (inputVector.y > 0.0f)
                 {
+                    animator.SetTrigger("Jump");
                     velocity.y = jumpSpeed;
                 }
+                else
+                {
+                    velocity.y = -gravity * Time.deltaTime;
+                }
+            }
+            else
+            {
+                velocity.y -= gravity * Time.deltaTime;
             }
 
-            velocity.y -= gravity * Time.deltaTime;
             velocity.y = Mathf.Clamp(velocity.y, -gravity, gravity);
-
             characterController.Move(velocity * Time.deltaTime);
         }
 
