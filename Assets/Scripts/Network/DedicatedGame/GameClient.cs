@@ -53,12 +53,6 @@ namespace MyGame.Network
             ConnectionHandler();
         }
 
-        // void LateUpdate()
-        // {
-        //     if (Time.frameCount % 3 == 0)
-        //         Debug.Log(peer.State.ToString());
-        // }
-
         void OnDestroy()
         {
             CleanUp();

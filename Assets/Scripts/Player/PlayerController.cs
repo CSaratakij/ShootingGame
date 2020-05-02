@@ -9,10 +9,13 @@ namespace MyGame
     {
         [Header("General")]
         [SerializeField]
+        bool isControlable;
+
+        [SerializeField]
         NetworkType networkType;
 
         [SerializeField]
-        bool isControlable;
+        Animator animator;
 
         [Header("Setting")]
         [SerializeField]
@@ -71,6 +74,7 @@ namespace MyGame
         void LateUpdate()
         {
             FacingHandler();
+            AnimationHandler();
         }
 
         void Initialize()
@@ -83,8 +87,8 @@ namespace MyGame
 
         void InputHandler()
         {
-            inputVector.x = Input.GetAxisRaw("Horizontal");
-            inputVector.z = Input.GetAxisRaw("Vertical");
+            inputVector.x = Input.GetAxis("Horizontal");
+            inputVector.z = Input.GetAxis("Vertical");
 
             if (inputVector.sqrMagnitude > 1.0f)
             {
@@ -100,6 +104,20 @@ namespace MyGame
             camera.ToggleZoom(shouldZoomCamera);
         }
 
+        void AnimationHandler()
+        {
+            bool isMove = Mathf.Abs(inputVector.x) > 0.0f || Mathf.Abs(inputVector.z) > 0.0f;
+            bool isAim = (AimState.Aim == aimState);
+
+            float moveAnimationMultipiler = moveSpeedMultipiler > 1.0f ? 1.1f : 1.0f;
+
+            animator.SetFloat("MoveMultipiler", moveAnimationMultipiler);
+            animator.SetBool("IsMove", isMove);
+            animator.SetBool("IsAim", isAim);
+            animator.SetFloat("MoveX", inputVector.x);
+            animator.SetFloat("MoveZ", inputVector.z);
+        }
+
         void MoveHandler()
         {
             var moveSideway = rotationBasis.right * inputVector.x;
@@ -107,11 +125,16 @@ namespace MyGame
 
             var moveDir = (moveSideway + moveForward);
 
-            velocity.x = (moveDir.x * moveSpeed * moveSpeedMultipiler);
-            velocity.z = (moveDir.z * moveSpeed * moveSpeedMultipiler);
+            if (characterController.isGrounded)
+            {
+                velocity.x = (moveDir.x * moveSpeed * moveSpeedMultipiler);
+                velocity.z = (moveDir.z * moveSpeed * moveSpeedMultipiler);
 
-            if (characterController.isGrounded && inputVector.y > 0.1f)
-                velocity.y = jumpSpeed;
+                if (inputVector.y > 0.0f)
+                {
+                    velocity.y = jumpSpeed;
+                }
+            }
 
             velocity.y -= gravity * Time.deltaTime;
             velocity.y = Mathf.Clamp(velocity.y, -gravity, gravity);
@@ -132,7 +155,7 @@ namespace MyGame
 
         void FacingHandler()
         {
-            bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.1f) || (AimState.Aim == aimState);
+            bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.0f) || (AimState.Aim == aimState);
 
             if (shouldFacingBasis)
             {
@@ -145,23 +168,23 @@ namespace MyGame
                     float absHorizontal = Mathf.Abs(inputVector.x);
                     float absForward = Mathf.Abs(inputVector.z);
 
-                    bool isOnlyPressHorizontal = (absHorizontal > 0.1f) && Mathf.Approximately(absForward, 0.0f);
-                    bool isOnlyPressForward = (absForward > 0.1f) && Mathf.Approximately(absHorizontal, 0.0f);
+                    bool isOnlyPressHorizontal = (absHorizontal > 0.0f) && Mathf.Approximately(absForward, 0.0f);
+                    bool isOnlyPressForward = (absForward > 0.0f) && Mathf.Approximately(absHorizontal, 0.0f);
 
                     if (isOnlyPressHorizontal)
                     {
-                        if (inputVector.x > 0.1f)
+                        if (inputVector.x > 0.0f)
                         {
                             targetRotation *= Quaternion.Euler(0, 90.0f, 0);
                         }
-                        else if (inputVector.x <= 0.1f)
+                        else if (inputVector.x < 0.0f)
                         {
                             targetRotation *= Quaternion.Euler(0, -90.0f, 0);
                         }
                     }
                     else if (isOnlyPressForward)
                     {
-                        bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < -0.1f);
+                        bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < -0.0f);
 
                         if (shouldReverseRotation)
                         {
@@ -170,7 +193,7 @@ namespace MyGame
                     }
                     else
                     {
-                        if (inputVector.z < -0.1f)
+                        if (inputVector.z < -0.0f)
                         {
                             targetRotation *= Quaternion.Euler(0, 180.0f, 0);
                         }

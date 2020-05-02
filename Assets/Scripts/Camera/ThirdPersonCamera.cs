@@ -74,7 +74,7 @@ namespace MyGame
             rotationAxis.x += -mouseInput.y * mouseSensitivity.x;
             rotationAxis.y += mouseInput.x * mouseSensitivity.y;
 
-            rotationAxis.x = Mathf.Clamp(rotationAxis.x, -75.0f, 75.0f);
+            rotationAxis.x = Mathf.Clamp(rotationAxis.x, -40.0f, 30.0f);
 
             if (rotationAxis.y > 360.0f)
             {
