@@ -117,10 +117,16 @@ namespace MyGame
                 }
             }
 
-            if (lookReference)
+            bool shouldLookAtTarget = (!isAiming && lookReference != null);
+
+            if (shouldLookAtTarget)
             {
                 animator.SetLookAtWeight(0.5f);
                 animator.SetLookAtPosition(lookReference.position);
+            }
+            else
+            {
+                animator.SetLookAtWeight(0.0f);
             }
 
             if (isAiming || isFireWeapon)

@@ -168,7 +168,7 @@ namespace MyGame
                     lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
                     isHipFireWeapon = true;
 
-                    humaniodIK.ToggleFireWeapon(isHipFireWeapon, Vector3.zero);
+                    humaniodIK.ToggleFireWeapon(true, Vector3.zero);
                 }
 
                 lastFireTimeStamp = (Time.time + fireTimeDuration);
@@ -233,7 +233,7 @@ namespace MyGame
             if (isHipFireWeapon && Time.time > lastHipFireTimeStamp)
             {
                 isHipFireWeapon = false;
-                humaniodIK.ToggleFireWeapon(isHipFireWeapon, Vector3.zero);
+                humaniodIK.ToggleFireWeapon(false, Vector3.zero);
             }
         }
 
