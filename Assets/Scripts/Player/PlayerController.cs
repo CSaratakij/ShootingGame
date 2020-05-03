@@ -24,6 +24,9 @@ namespace MyGame
         [SerializeField]
         HumaniodIK humaniodIK;
 
+        [SerializeField]
+        Transform[] guns;
+
         [Header("Setting")]
         [SerializeField]
         float moveSpeed;
@@ -51,16 +54,28 @@ namespace MyGame
             None,
             Aim
         }
+        
+        enum GunHand
+        {
+            Left,
+            Right,
+        }
 
         public uint ID { get; set; }
+
+        int hipShootType = 0;
 
         float moveSpeedMultipiler = 1.0f;
         float zoomDistanceMultipiler = 1.0f;
 
         float nonZeroMoveX = 1.0f;
 
+        float lastFireTimeStamp = 0.0f;
+        float fireTimeDuration = 0.5f;
+
         bool isStartRun = false;
         bool isSwitchCameraSide = false;
+        bool isFireWeapon = false;
 
         Vector3 inputVector;
         Vector3 velocity;
@@ -70,11 +85,22 @@ namespace MyGame
         CharacterController characterController;
 
         AimState aimState;
+        GunHand currentHand = GunHand.Right;
 
         void Awake()
         {
             Initialize();
             HideCursor();
+            HideGunSide(GunHand.Left);
+            SetGunSide(GunHand.Right);
+        }
+
+        void Start()
+        {
+            if (!isControlable)
+            {
+                humaniodIK.DisableRotateY(true);
+            }
         }
 
         void Update()
@@ -85,6 +111,8 @@ namespace MyGame
 
         void LateUpdate()
         {
+            FlagHandler();
+            SwitchGunSideHandler();
             FacingHandler();
             AnimationHandler();
         }
@@ -120,53 +148,22 @@ namespace MyGame
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
             bool shouldZoomCamera = (AimState.Aim == aimState);
 
-            //if not aim...
-            //hip fire
-            //todo: set ik look at to the hip fire aim if hip fire (cooldown to back to normal with normal spine rotation ik)
             if (Input.GetButtonDown("Fire1"))
             {
                 if (AimState.None == aimState)
                 {
                     var forwardDir = transform.forward;
-                    var relativeVecor = (tempDir.position - transform.position);
-                    var product = Vector3.Dot(forwardDir, relativeVecor);
+                    var relativeVector = (tempDir.position - transform.position);
+                    var product = Vector3.Dot(forwardDir, relativeVector);
 
-                    var hipShootType = product <= 2.0f ? 2 : 1;
+                    hipShootType = (product <= 3.0f) ? 2 : 1;
 
                     animator.SetFloat("HipShootType", hipShootType);
                     animator.SetTrigger("HipFire");
-
-                    // var angle = Vector3.Angle(forwardDir, relativeVecor);
-                    // var side = relativeVecor.x > 0.0f ? 1.0f : -1.0f;
-                    // Debug.Log(angle);
-
-                    // humaniodIK.ToggleFireWeapon(true, tempDir.position);
-
-                    // if (angle > 120.0f)
-                    // {
-                        // var rotateAngle = angle - 90.0f;
-                        // rotateAngle *= -side;
-                        // humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, rotateAngle, 0));
-                    // }
-                    // else
-                    // {
-                        // humaniodIK.ToggleFireWeapon(true, Quaternion.identity);
-                    // }
-
-                    //player give their back to crosshair
-                    // if (product < -20.0f)
-                    // {
-                    //     humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, 75, 0));
-                    // }
-                    // else
-                    // {
-                    //     humaniodIK.ToggleFireWeapon(true, Quaternion.Euler(0, 0, 0));
-                    // }
-                    // Quaternion dir = Quaternion.LookRotation(relativeVecor);
-                    // Quaternion actualDir = Quaternion.Euler(0, dir.eulerAngles.y, 0);
-
-                    // humaniodIK.ToggleFireWeapon(true, relativeVecor.normalized);
                 }
+
+                lastFireTimeStamp = (Time.time + fireTimeDuration);
+                isFireWeapon = true;
             }
 
             if (Input.GetButtonDown("Fire2") || Input.GetButtonUp("Fire2"))
@@ -215,6 +212,14 @@ namespace MyGame
             animator.SetFloat("MoveX", inputVector.x);
             animator.SetFloat("MoveZ", inputVector.z);
             animator.SetFloat("NonZeroMoveX", nonZeroMoveX);
+        }
+
+        void FlagHandler()
+        {
+            if (isFireWeapon && Time.time > lastFireTimeStamp)
+            {
+                isFireWeapon = false;
+            }
         }
 
         void MoveHandler()
@@ -308,6 +313,73 @@ namespace MyGame
 
                 transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationDamp);
             }
+        }
+
+        void SwitchGunSideHandler()
+        {
+            if (!isFireWeapon)
+            {
+                if (AimState.Aim == aimState && GunHand.Left == currentHand)
+                {
+                    SetGunSide(GunHand.Right);
+                }
+
+                return;
+            }
+
+            switch (aimState)
+            {
+                case AimState.None:
+                {
+                    if (hipShootType == 1)
+                    {
+                        SetGunSide(GunHand.Right);
+                        return;
+                    }
+
+                    if (nonZeroMoveX > 0.0f)
+                    {
+                        SetGunSide(GunHand.Right);
+                    }
+                    else if (nonZeroMoveX < 0.0f)
+                    {
+                        SetGunSide(GunHand.Left);
+                    }
+                }
+                break;
+
+                case AimState.Aim:
+                {
+                    if (GunHand.Left == currentHand)
+                    {
+                        SetGunSide(GunHand.Right);
+                    }
+                }
+                break;
+
+                default:
+                break;
+            }
+        }
+
+        void HideGunSide(GunHand side)
+        {
+            var indice = (int) side;
+            guns[indice].gameObject.SetActive(false);
+        }
+
+        void SetGunSide(GunHand side)
+        {
+            var currentIndice = (int) currentHand;
+            var indice = (int) side;
+
+            if (currentIndice == indice)
+                return;
+
+            currentHand = side;
+
+            guns[currentIndice].gameObject.SetActive(false);
+            guns[indice].gameObject.SetActive(true);
         }
     }
 }

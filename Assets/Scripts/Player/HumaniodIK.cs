@@ -28,6 +28,8 @@ namespace MyGame
         bool isAiming = false;
         bool isFireWeapon = false;
 
+        bool isDisableRotateY = false;
+
         float currentAimRotateX;
         float currentAimRotateY;
 
@@ -119,10 +121,17 @@ namespace MyGame
         {
             isAiming = value;
             
-            var maxTarget = isFlipSide ? -maxAimRotateY : maxAimRotateY;
-            var result = value ? maxTarget : 0.0f;
+            if (isDisableRotateY)
+            {
+                targetAimRotateY = 0.0f;
+            }
+            else
+            {
+                var maxTarget = isFlipSide ? -maxAimRotateY : maxAimRotateY;
+                var result = value ? maxTarget : 0.0f;
 
-            targetAimRotateY = result;
+                targetAimRotateY = result;
+            }
         }
 
         public void ToggleFlipSide(bool value, float weight = 1.0f)
@@ -137,6 +146,11 @@ namespace MyGame
             isFireWeapon = value;
             // this.facingRotation = facingRotation;
             this.facingRotation = facingRotation;
+        }
+
+        public void DisableRotateY(bool value)
+        {
+            isDisableRotateY = value;
         }
     }
 }
