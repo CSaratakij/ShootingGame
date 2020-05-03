@@ -73,9 +73,13 @@ namespace MyGame
         float lastFireTimeStamp = 0.0f;
         float fireTimeDuration = 0.5f;
 
+        float lastHipFireTimeStamp = 0.0f;
+        float hipFireTimeDuration = 0.75f;
+
         bool isStartRun = false;
         bool isSwitchCameraSide = false;
         bool isFireWeapon = false;
+        bool isHipFireWeapon = false;
 
         Vector3 inputVector;
         Vector3 velocity;
@@ -156,10 +160,15 @@ namespace MyGame
                     var relativeVector = (tempDir.position - transform.position);
                     var product = Vector3.Dot(forwardDir, relativeVector);
 
-                    hipShootType = (product <= 3.0f) ? 2 : 1;
+                    hipShootType = (product <= 4.5f) ? 2 : 1;
 
                     animator.SetFloat("HipShootType", hipShootType);
                     animator.SetTrigger("HipFire");
+
+                    lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
+                    isHipFireWeapon = true;
+
+                    humaniodIK.ToggleFireWeapon(isHipFireWeapon, Vector3.zero);
                 }
 
                 lastFireTimeStamp = (Time.time + fireTimeDuration);
@@ -219,6 +228,12 @@ namespace MyGame
             if (isFireWeapon && Time.time > lastFireTimeStamp)
             {
                 isFireWeapon = false;
+            }
+
+            if (isHipFireWeapon && Time.time > lastHipFireTimeStamp)
+            {
+                isHipFireWeapon = false;
+                humaniodIK.ToggleFireWeapon(isHipFireWeapon, Vector3.zero);
             }
         }
 

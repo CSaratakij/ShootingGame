@@ -23,10 +23,19 @@ namespace MyGame
         float rotateDampX = 0.02f;
 
         [SerializeField]
+        float toNormalChestDamp = 0.05f;
+
+        [SerializeField]
         float rotateRateY = 5.0f;
 
+        int idleNameHash;
+
+        bool isInitChestOriginalRotation = false;
         bool isAiming = false;
         bool isFireWeapon = false;
+
+        bool isPreviousAiming = false;
+        bool isPreviousFireWeapon = false;
 
         bool isDisableRotateY = false;
 
@@ -39,6 +48,9 @@ namespace MyGame
         Transform chestBone;
 
         Vector3 facingRotation;
+
+        Quaternion originalChestRotation;
+        Quaternion lastAimChestRotation;
 
         enum AnimLayer
         {
@@ -55,8 +67,11 @@ namespace MyGame
         void Initialize()
         {
             animator = GetComponent<Animator>();
-            currentAimRotateY = maxAimRotateY;
             chestBone = animator.GetBoneTransform(HumanBodyBones.Chest);
+
+            currentAimRotateY = maxAimRotateY;
+            originalChestRotation = Quaternion.identity;
+            idleNameHash = Animator.StringToHash("UpperArm.Idle");
         }
 
         void OnAnimatorIK(int layerIndex)
@@ -90,19 +105,55 @@ namespace MyGame
 
         void HandleUpperArmLayer()
         {
+            if (!isInitChestOriginalRotation)
+            {
+                int expectLayer = (int) AnimLayer.UpperArm;
+                bool isPlayingIdleAnimation = (idleNameHash == animator.GetCurrentAnimatorStateInfo(expectLayer).fullPathHash);
+
+                if (isPlayingIdleAnimation)
+                {
+                    originalChestRotation = Quaternion.Euler(chestBone.localRotation.eulerAngles.x, 0.0f, 0.0f);
+                    isInitChestOriginalRotation = true;
+                }
+            }
+
             if (lookReference)
             {
                 animator.SetLookAtWeight(0.5f);
                 animator.SetLookAtPosition(lookReference.position);
             }
 
-            if (isAiming)
+            if (isAiming || isFireWeapon)
             {
                 var rotRef = Quaternion.Euler(aimReference.rotation.eulerAngles.x, 0.0f, 0.0f);
                 var rotCurrent = Quaternion.Euler(chestBone.localRotation.eulerAngles.x, 0.0f, 0.0f);
 
                 var chestRotation = Quaternion.Slerp(rotCurrent, rotRef, rotateDampX);
+                lastAimChestRotation = chestRotation;
+
                 animator.SetBoneLocalRotation(HumanBodyBones.Chest, chestRotation);
+            }
+            else
+            {
+                bool shouldRotateChestBackWithSmooth = (isPreviousAiming && !isAiming) || (isPreviousFireWeapon && !isFireWeapon);
+
+                if (shouldRotateChestBackWithSmooth)
+                {
+                    var rotRef = originalChestRotation;
+                    var rotCurrent = lastAimChestRotation;
+
+                    lastAimChestRotation = Quaternion.Slerp(rotCurrent, rotRef, toNormalChestDamp);
+                    animator.SetBoneLocalRotation(HumanBodyBones.Chest, lastAimChestRotation);
+
+                    float angle = Quaternion.Angle(lastAimChestRotation, rotRef);
+                    bool acceptableError = Mathf.Approximately(angle, 0.0f);
+
+                    if (acceptableError)
+                    {
+                        isPreviousAiming = false;
+                        isPreviousFireWeapon = false;
+                    }
+                }
             }
 
             bool shouldStopForceRotate = !isAiming && Mathf.Approximately(currentAimRotateY, targetAimRotateY);
@@ -119,6 +170,7 @@ namespace MyGame
 
         public void ToggleAim(bool value, bool isFlipSide = false)
         {
+            isPreviousAiming = isAiming;
             isAiming = value;
             
             if (isDisableRotateY)
@@ -143,6 +195,7 @@ namespace MyGame
         // public void ToggleFireWeapon(bool value, Quaternion facingRotation)
         public void ToggleFireWeapon(bool value, Vector3 facingRotation)
         {
+            isPreviousFireWeapon = isFireWeapon;
             isFireWeapon = value;
             // this.facingRotation = facingRotation;
             this.facingRotation = facingRotation;
