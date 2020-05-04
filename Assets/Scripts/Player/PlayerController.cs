@@ -8,6 +8,10 @@ namespace MyGame
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
+        static readonly Quaternion Y_90_DEGREE = Quaternion.Euler(0, 90.0f, 0);
+        static readonly Quaternion Y_NEGATIVE_90_DEGREE = Quaternion.Euler(0, -90.0f, 0);
+        static readonly Quaternion Y_180_DEGREE = Quaternion.Euler(0, 180.0f, 0);
+
         [Header("General")]
         [SerializeField]
         Transform tempDir;
@@ -74,7 +78,7 @@ namespace MyGame
         float fireTimeDuration = 0.5f;
 
         float lastHipFireTimeStamp = 0.0f;
-        float hipFireTimeDuration = 0.95f;
+        float hipFireTimeDuration = 0.5f;
 
         bool isStartRun = false;
         bool isSwitchCameraSide = false;
@@ -156,11 +160,20 @@ namespace MyGame
             {
                 if (AimState.None == aimState)
                 {
-                    var forwardDir = transform.forward;
-                    var relativeVector = (tempDir.position - transform.position);
-                    var product = Vector3.Dot(forwardDir, relativeVector);
+                    bool isNotMove = Mathf.Approximately(inputVector.sqrMagnitude, 0.0f);
 
-                    hipShootType = (product <= 4.5f) ? 2 : 1;
+                    if (isNotMove)
+                    {
+                        hipShootType = 1;
+                    }
+                    else
+                    {
+                        var forwardDir = transform.forward;
+                        var relativeVector = (tempDir.position - transform.position);
+
+                        var product = Vector3.Dot(forwardDir, relativeVector);
+                        hipShootType = (product <= 4.5f) ? 2 : 1;
+                    }
 
                     animator.SetFloat("HipShootType", hipShootType);
                     animator.SetTrigger("HipFire");
@@ -282,6 +295,13 @@ namespace MyGame
         void FacingHandler()
         {
             bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.0f) || (AimState.Aim == aimState);
+            bool shouldForceRotateOnHipFire = isHipFireWeapon && Mathf.Approximately(inputVector.sqrMagnitude, 0.0f) && (AimState.None == aimState);
+
+            if (shouldForceRotateOnHipFire)
+            {
+                transform.rotation = Quaternion.Slerp(transform.rotation, rotationBasis.rotation, rotationDamp);
+                return;
+            }
 
             if (shouldFacingBasis)
             {
@@ -295,33 +315,58 @@ namespace MyGame
                     float absForward = Mathf.Abs(inputVector.z);
 
                     bool isOnlyPressHorizontal = (absHorizontal > 0.0f) && Mathf.Approximately(absForward, 0.0f);
-                    bool isOnlyPressForward = (absForward > 0.0f) && Mathf.Approximately(absHorizontal, 0.0f);
+                    bool isOnlyPressForward = (inputVector.z > 0.0f) && Mathf.Approximately(absHorizontal, 0.0f);
 
                     if (isOnlyPressHorizontal)
                     {
                         if (inputVector.x > 0.0f)
                         {
-                            targetRotation *= Quaternion.Euler(0, 90.0f, 0);
+                            targetRotation *= Y_90_DEGREE;
                         }
                         else if (inputVector.x < 0.0f)
                         {
-                            targetRotation *= Quaternion.Euler(0, -90.0f, 0);
+                            targetRotation *= Y_NEGATIVE_90_DEGREE;
                         }
                     }
                     else if (isOnlyPressForward)
                     {
-                        bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < -0.0f);
+                        bool shouldReverseRotation = (AimState.None == aimState) && (inputVector.z < 0.0f);
 
                         if (shouldReverseRotation)
                         {
-                            targetRotation *= Quaternion.Euler(0, 180.0f, 0);
+                            targetRotation *= Y_180_DEGREE;
                         }
                     }
                     else
                     {
-                        if (inputVector.z < -0.0f)
+                        if (inputVector.z < 0.0f)
                         {
-                            targetRotation *= Quaternion.Euler(0, 180.0f, 0);
+                            bool shouldRotateSideWay = isHipFireWeapon && (AimState.None == aimState) && (hipShootType == 2);
+
+                            if (shouldRotateSideWay)
+                            {
+                                switch (currentHand)
+                                {
+                                    case GunHand.Right:
+                                    {
+                                        targetRotation *= Y_90_DEGREE;
+                                    }
+                                    break;
+
+                                    case GunHand.Left:
+                                    {
+                                        targetRotation *= Y_NEGATIVE_90_DEGREE;
+                                    }
+                                    break;
+
+                                    default:
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                targetRotation *= Y_180_DEGREE;
+                            }
                         }
                     }
                 }

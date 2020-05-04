@@ -935,7 +935,7 @@ PrefabInstance:
         type: 3}
       propertyPath: lookReference
       value: 
-      objectReference: {fileID: 321803254}
+      objectReference: {fileID: 0}
     - target: {fileID: 2396974354330822570, guid: a90922e5f0c278147bd34f93a73bdf9c,
         type: 3}
       propertyPath: aimReference

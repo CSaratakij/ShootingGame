@@ -1,5 +1,24 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &6489594842055807404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917164419875759111}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb0b4f4d054d336439272ba2e7a2b80a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lookReference: {fileID: 0}
+  aimReference: {fileID: 0}
+  negateHipFireXAxis: 12
+  maxAimRotateY: 15
+  rotateDampX: 1
+  toNormalChestDamp: 0.065
+  rotateRateY: 5
 --- !u!1 &6489594842181749732
 GameObject:
   m_ObjectHideFlags: 0
@@ -90,25 +109,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6489594842055807404
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 917164419875759111}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb0b4f4d054d336439272ba2e7a2b80a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  lookReference: {fileID: 0}
-  aimReference: {fileID: 0}
-  negateHipFireXAxis: 12
-  maxAimRotateY: 15
-  rotateDampX: 1
-  toNormalChestDamp: 0.065
-  rotateRateY: 5
 --- !u!1 &9195085142245731476
 GameObject:
   m_ObjectHideFlags: 0
@@ -212,7 +212,7 @@ MonoBehaviour:
   - {fileID: 9193125467680477486}
   - {fileID: 9193125467834374132}
   moveSpeed: 6
-  runSpeedMultipiler: 1.5
+  runSpeedMultipiler: 1.6
   jumpSpeed: 12
   gravity: 40
   rotationDamp: 0.1

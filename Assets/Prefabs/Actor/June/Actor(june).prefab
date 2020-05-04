@@ -1146,7 +1146,7 @@ MonoBehaviour:
   - {fileID: 2396974353610206185}
   - {fileID: 2396974354892525459}
   moveSpeed: 6
-  runSpeedMultipiler: 1.5
+  runSpeedMultipiler: 1.6
   jumpSpeed: 12
   gravity: 40
   rotationDamp: 0.1
