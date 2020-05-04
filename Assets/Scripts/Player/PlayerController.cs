@@ -74,7 +74,7 @@ namespace MyGame
         float fireTimeDuration = 0.5f;
 
         float lastHipFireTimeStamp = 0.0f;
-        float hipFireTimeDuration = 0.75f;
+        float hipFireTimeDuration = 0.95f;
 
         bool isStartRun = false;
         bool isSwitchCameraSide = false;
