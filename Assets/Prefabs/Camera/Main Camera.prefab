@@ -65,7 +65,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 289
+    m_Bits: 801
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -99,7 +99,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   target: {fileID: 0}
   externalBasis: {fileID: 1543517365937420563}
-  maxVerticalLookAxis: 35
+  maxVerticalLookAxis: 40
   viewSide: 1
   normalFOV: 60
   zoomFOV: 35

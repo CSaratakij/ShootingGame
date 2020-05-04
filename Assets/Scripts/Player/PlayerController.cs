@@ -8,19 +8,23 @@ namespace MyGame
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
+        static readonly Vector3 VIEWPORT_CENTER = new Vector3(0.5f, 0.5f, 0.0f);
         static readonly Quaternion Y_90_DEGREE = Quaternion.Euler(0, 90.0f, 0);
         static readonly Quaternion Y_NEGATIVE_90_DEGREE = Quaternion.Euler(0, -90.0f, 0);
         static readonly Quaternion Y_180_DEGREE = Quaternion.Euler(0, 180.0f, 0);
 
         [Header("General")]
         [SerializeField]
-        Transform tempDir;
-
-        [SerializeField]
         bool isControlable;
 
         [SerializeField]
         NetworkType networkType;
+
+        [SerializeField]
+        Transform tempDir;
+
+        [SerializeField]
+        Transform dropItemRef;
 
         [SerializeField]
         Animator animator;
@@ -29,7 +33,10 @@ namespace MyGame
         HumaniodIK humaniodIK;
 
         [SerializeField]
-        Transform[] guns;
+        Gun gun;
+
+        [SerializeField]
+        Transform[] gunHandSide;
 
         [Header("Setting")]
         [SerializeField]
@@ -46,6 +53,12 @@ namespace MyGame
 
         [SerializeField]
         float rotationDamp;
+
+        [SerializeField]
+        float maxPickItemDistance = 5.0f;
+
+        [SerializeField]
+        LayerMask itemLayer;
 
         public enum NetworkType
         {
@@ -66,6 +79,7 @@ namespace MyGame
         }
 
         public uint ID { get; set; }
+        public bool IsHasWeapon => (gun != null);
 
         int hipShootType = 0;
 
@@ -81,6 +95,8 @@ namespace MyGame
         float hipFireTimeDuration = 0.5f;
 
         bool isStartRun = false;
+        bool isStartReload = false;
+
         bool isSwitchCameraSide = false;
         bool isFireWeapon = false;
         bool isHipFireWeapon = false;
@@ -156,36 +172,45 @@ namespace MyGame
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
             bool shouldZoomCamera = (AimState.Aim == aimState);
 
-            if (Input.GetButtonDown("Fire1"))
+            bool canPullTrigger = Input.GetButtonDown("Fire1") && IsHasWeapon && !isStartReload;
+
+            if (canPullTrigger)
             {
-                if (AimState.None == aimState)
-                {
-                    bool isNotMove = Mathf.Approximately(inputVector.sqrMagnitude, 0.0f);
+                Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
 
-                    if (isNotMove)
+                gun?.PullTrigger(ray, (success, hitInfo) => {
+                    if (!success)
+                        return;
+
+                    if (AimState.None == aimState)
                     {
-                        hipShootType = 1;
+                        bool isNotMove = Mathf.Approximately(inputVector.sqrMagnitude, 0.0f);
+
+                        if (isNotMove)
+                        {
+                            hipShootType = 1;
+                        }
+                        else
+                        {
+                            var forwardDir = transform.forward;
+                            var relativeVector = (tempDir.position - transform.position);
+
+                            var product = Vector3.Dot(forwardDir, relativeVector);
+                            hipShootType = (product <= 4.5f) ? 2 : 1;
+                        }
+
+                        animator.SetFloat("HipShootType", hipShootType);
+                        animator.SetTrigger("HipFire");
+
+                        lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
+                        isHipFireWeapon = true;
+
+                        humaniodIK.ToggleFireWeapon(true, Vector3.zero);
                     }
-                    else
-                    {
-                        var forwardDir = transform.forward;
-                        var relativeVector = (tempDir.position - transform.position);
 
-                        var product = Vector3.Dot(forwardDir, relativeVector);
-                        hipShootType = (product <= 4.5f) ? 2 : 1;
-                    }
-
-                    animator.SetFloat("HipShootType", hipShootType);
-                    animator.SetTrigger("HipFire");
-
-                    lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
-                    isHipFireWeapon = true;
-
-                    humaniodIK.ToggleFireWeapon(true, Vector3.zero);
-                }
-
-                lastFireTimeStamp = (Time.time + fireTimeDuration);
-                isFireWeapon = true;
+                    lastFireTimeStamp = (Time.time + fireTimeDuration);
+                    isFireWeapon = true;
+                });
             }
 
             if (Input.GetButtonDown("Fire2") || Input.GetButtonUp("Fire2"))
@@ -219,12 +244,59 @@ namespace MyGame
                 var weight = isSwitchCameraSide ? 0.0f : 1.0f;
                 humaniodIK.ToggleFlipSide(isSwitchCameraSide, weight);
             }
+
+            if (Input.GetKeyDown(KeyCode.R) && IsHasWeapon)
+            {
+                bool shouldReload = !isStartReload && gun.IsEmptyMagazine;
+
+                if (shouldReload)
+                {
+                    isStartReload = true;
+                    //play reload animation here...
+                    //invoke callback by animation events
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
+                RaycastHit pickUpHitInfo;
+
+                if (Physics.Raycast(ray, out pickUpHitInfo, 100.0f, itemLayer))
+                {
+                    if (pickUpHitInfo.transform == null)
+                        return;
+
+                    var distance = pickUpHitInfo.transform.position - transform.position;
+                    bool allowPickup = distance.sqrMagnitude <= (maxPickItemDistance * maxPickItemDistance);
+
+                    if (!allowPickup)
+                        return;
+
+                    bool isItemIsAGun = pickUpHitInfo.transform.gameObject.CompareTag("Gun");
+
+                    if (isItemIsAGun)
+                    {
+                        gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
+                        gun?.Pickup(gunHandSide[(int) GunHand.Right]);
+                    }
+                }
+            }
+
+            if (Input.GetKeyDown(KeyCode.G) && IsHasWeapon)
+            {
+                if (isStartReload)
+                    return;
+
+                gun?.Drop(dropItemRef.position);
+                gun = null;
+            }
         }
 
         void AnimationHandler()
         {
             bool isMove = Mathf.Abs(inputVector.x) > 0.0f || Mathf.Abs(inputVector.z) > 0.0f;
-            bool isAim = (AimState.Aim == aimState);
+            bool isAim = (AimState.Aim == aimState) && IsHasWeapon;
 
             float moveAnimationMultipiler = moveSpeedMultipiler > 1.0f ? 1.1f : 1.0f;
 
@@ -375,6 +447,7 @@ namespace MyGame
             }
         }
 
+//todo: don't forget to wrap a gun from left to right hand
         void SwitchGunSideHandler()
         {
             if (!isFireWeapon)
@@ -425,7 +498,7 @@ namespace MyGame
         void HideGunSide(GunHand side)
         {
             var indice = (int) side;
-            guns[indice].gameObject.SetActive(false);
+            gunHandSide[indice].gameObject.SetActive(false);
         }
 
         void SetGunSide(GunHand side)
@@ -438,8 +511,15 @@ namespace MyGame
 
             currentHand = side;
 
-            guns[currentIndice].gameObject.SetActive(false);
-            guns[indice].gameObject.SetActive(true);
+            gunHandSide[currentIndice].gameObject.SetActive(false);
+            gunHandSide[indice].gameObject.SetActive(true);
+        }
+
+//callback from animation
+        void ReloadGunCallback()
+        {
+            gun?.Reload();
+            isStartReload = false;
         }
     }
 }

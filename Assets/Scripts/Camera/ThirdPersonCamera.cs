@@ -55,6 +55,7 @@ namespace MyGame
         }
 
         public Transform ExternalBasis => externalBasis;
+        public Camera Camera => _camera;
 
         float currentZoomFOV;
         float targetZoomFOV;
@@ -68,6 +69,7 @@ namespace MyGame
         Vector3 currentOffset;
 
         ViewSide previousViewSide;
+        Camera _camera;
 
         void Awake()
         {
@@ -89,7 +91,9 @@ namespace MyGame
 
         void Initialize()
         {
+            _camera = GetComponent<Camera>();
             externalBasis.parent = null;
+
             currentZoomFOV = normalFOV;
             targetZoomFOV = normalFOV;
 

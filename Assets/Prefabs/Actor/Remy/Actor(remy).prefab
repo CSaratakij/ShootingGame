@@ -28,7 +28,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6489594842181749736}
-  - component: {fileID: 6489594842181749733}
   m_Layer: 0
   m_Name: (Right) WeaponSlot
   m_TagString: Untagged
@@ -51,19 +50,6 @@ Transform:
   m_Father: {fileID: 3230384135907987831}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 18.984001, y: 95.090004, z: 85.882}
---- !u!65 &6489594842181749733
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6489594842181749732}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6489594843521517629
 GameObject:
   m_ObjectHideFlags: 0
@@ -73,7 +59,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6489594843521517602}
-  - component: {fileID: 6489594843521517603}
   m_Layer: 0
   m_Name: (Left) WeaponSlot
   m_TagString: Untagged
@@ -96,19 +81,6 @@ Transform:
   m_Father: {fileID: 5427895774195778220}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 22.042002, y: -81.982, z: -85.283005}
---- !u!65 &6489594843521517603
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6489594843521517629}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &9195085142245731476
 GameObject:
   m_ObjectHideFlags: 0
@@ -157,7 +129,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &9195085142641177681
 Transform:
   m_ObjectHideFlags: 0
@@ -203,19 +175,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 24f068b4c77c62a478d49efb39fc1a64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tempDir: {fileID: 0}
   isControlable: 1
   networkType: 0
+  tempDir: {fileID: 0}
+  dropItemRef: {fileID: 0}
   animator: {fileID: 6083015333538446190}
   humaniodIK: {fileID: 6489594842055807404}
-  guns:
-  - {fileID: 9193125467680477486}
-  - {fileID: 9193125467834374132}
+  gun: {fileID: 0}
+  gunHandSide:
+  - {fileID: 6489594843521517602}
+  - {fileID: 6489594842181749736}
   moveSpeed: 6
-  runSpeedMultipiler: 1.6
+  runSpeedMultipiler: 1.5
   jumpSpeed: 12
   gravity: 40
   rotationDamp: 0.1
+  maxPickItemDistance: 5
+  itemLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1001 &9195085143154772392
 PrefabInstance:
   m_ObjectHideFlags: 0
