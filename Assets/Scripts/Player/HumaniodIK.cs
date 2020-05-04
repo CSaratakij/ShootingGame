@@ -17,6 +17,9 @@ namespace MyGame
 
         [Header("Setting")]
         [SerializeField]
+        float negateHipFireXAxis = 30.0f;
+
+        [SerializeField]
         float maxAimRotateY = 25.0f;
 
         [SerializeField]
@@ -131,7 +134,16 @@ namespace MyGame
 
             if (isAiming || isFireWeapon)
             {
-                var rotRef = Quaternion.Euler(aimReference.rotation.eulerAngles.x, 0.0f, 0.0f);
+                float angleX = aimReference.rotation.eulerAngles.x;
+
+                bool shouldNegateChestRotation = (!isAiming && isFireWeapon);
+
+                if (shouldNegateChestRotation)
+                {
+                    angleX += negateHipFireXAxis;
+                }
+
+                var rotRef = Quaternion.Euler(angleX, 0.0f, 0.0f);
                 var rotCurrent = Quaternion.Euler(chestBone.localRotation.eulerAngles.x, 0.0f, 0.0f);
 
                 var chestRotation = Quaternion.Slerp(rotCurrent, rotRef, rotateDampX);
