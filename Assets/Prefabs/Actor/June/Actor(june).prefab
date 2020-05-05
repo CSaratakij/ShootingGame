@@ -156,7 +156,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   isControlable: 1
   networkType: 0
-  tempDir: {fileID: 0}
   dropItemRef: {fileID: 657731249}
   animator: {fileID: 771088013816046005}
   humaniodIK: {fileID: 2396974354330822570}

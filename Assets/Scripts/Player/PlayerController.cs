@@ -100,6 +100,8 @@ namespace MyGame
         bool isFireWeapon = false;
         bool isHipFireWeapon = false;
 
+        HUDInfo hudInfo;
+
         Vector3 inputVector;
         Vector3 velocity;
 
@@ -121,7 +123,11 @@ namespace MyGame
 
         void Start()
         {
-            if (!isControlable)
+            if (isControlable)
+            {
+                UpdateHUD(hudInfo);
+            }
+            else
             {
                 humaniodIK.DisableRotateY(true);
             }
@@ -221,6 +227,9 @@ namespace MyGame
 
                     lastFireTimeStamp = (Time.time + fireTimeDuration);
                     isFireWeapon = true;
+
+                    hudInfo.currentMagazine = gun.AmmoInMagazine;
+                    UpdateHUD(hudInfo);
                 });
             }
 
@@ -287,7 +296,16 @@ namespace MyGame
                     if (isItemIsAGun)
                     {
                         gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
-                        gun?.Pickup(gunHandSide[(int) GunHand.Right]);
+
+                        if (gun)
+                        {
+                            gun.Pickup(gunHandSide[(int) GunHand.Right]);
+
+                            hudInfo.currentMagazine = gun.AmmoInMagazine;
+                            hudInfo.maxMagazine = gun.MaxAmmoInMagazine;
+
+                            UpdateHUD(hudInfo);
+                        }
                     }
                 }
             }
@@ -299,6 +317,11 @@ namespace MyGame
 
                 gun?.Drop(dropItemRef.position);
                 gun = null;
+
+                hudInfo.currentMagazine = 0;
+                hudInfo.maxMagazine = 0;
+
+                UpdateHUD(hudInfo);
             }
         }
 
@@ -520,7 +543,7 @@ namespace MyGame
 
             if (IsHasWeapon)
             {
-                gun.transform.parent = gunHandSide[indice];
+                gun.transform.parent = gunHandSide[currentHandIndex];
                 gun.transform.localPosition = Vector3.zero;
                 gun.transform.localRotation = Quaternion.identity;
             }
@@ -543,6 +566,14 @@ namespace MyGame
         {
             gun?.Reload();
             isStartReload = false;
+
+            hudInfo.currentMagazine = gun.AmmoInMagazine;
+            UpdateHUD(hudInfo);
+        }
+
+        void UpdateHUD(HUDInfo hudInfo)
+        {
+            UIHUDController.Instance?.UpdateUI(hudInfo);
         }
     }
 }

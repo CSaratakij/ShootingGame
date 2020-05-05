@@ -356,7 +356,7 @@ GameObject:
   - component: {fileID: 640633340}
   - component: {fileID: 640633339}
   m_Layer: 5
-  m_Name: lblHealth
+  m_Name: lblAmmo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -583,6 +583,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1002111270}
   - component: {fileID: 1002111272}
+  - component: {fileID: 1002111271}
   m_Layer: 5
   m_Name: panelHUD (M)
   m_TagString: Untagged
@@ -611,6 +612,22 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1002111271
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1002111269}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab30c254dd549dd4aaea934855b34002, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  strHealthInfoFormat: H | {0}
+  lblHealthInfo: {fileID: 1113766850}
+  strMagazineInfoFormat: '{0} / {1}'
+  lblMagazineInfo: {fileID: 640633339}
 --- !u!222 &1002111272
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1147,7 +1164,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -144.14001, y: 0}
+  m_AnchoredPosition: {x: -144.13965, y: 0}
   m_SizeDelta: {x: 144.14001, y: 50}
   m_Pivot: {x: 0, y: 0}
 --- !u!114 &1953003704
@@ -4421,7 +4438,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.074, y: 0.074371874}
   m_AnchorMax: {x: 0.92600006, y: 0.7584513}
-  m_AnchoredPosition: {x: 0, y: 2.475006}
+  m_AnchoredPosition: {x: 0, y: 2.4750977}
   m_SizeDelta: {x: -0.30000305, y: -3.100006}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &666681748717355077
@@ -6795,7 +6812,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 13.700012}
+  m_AnchoredPosition: {x: 0, y: 13.700195}
   m_SizeDelta: {x: -102.2, y: -67.7}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &666681749105552445
@@ -9343,7 +9360,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0.3566915, y: 1}
-  m_AnchoredPosition: {x: -1.5999756, y: -0.000022888184}
+  m_AnchoredPosition: {x: -1.5996094, y: -0.000022888184}
   m_SizeDelta: {x: -3.2999878, y: 0.80000305}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &666681749727113294
@@ -9942,7 +9959,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -0.000015258789}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 10}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &666681749887808989
@@ -10981,7 +10998,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 55.249825, y: -1.3999255}
+  m_AnchoredPosition: {x: 55.249756, y: -1.3999255}
   m_SizeDelta: {x: 47.34, y: 47.34}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &666681750103820025
@@ -11253,11 +11270,6 @@ PrefabInstance:
       propertyPath: aimReference
       value: 
       objectReference: {fileID: 144484232}
-    - target: {fileID: 4554959793865774049, guid: a90922e5f0c278147bd34f93a73bdf9c,
-        type: 3}
-      propertyPath: tempDir
-      value: 
-      objectReference: {fileID: 321803254}
     - target: {fileID: 4554959793865774051, guid: a90922e5f0c278147bd34f93a73bdf9c,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -11317,11 +11329,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Actor(june)
-      objectReference: {fileID: 0}
-    - target: {fileID: 4554959793865774076, guid: a90922e5f0c278147bd34f93a73bdf9c,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a90922e5f0c278147bd34f93a73bdf9c, type: 3}

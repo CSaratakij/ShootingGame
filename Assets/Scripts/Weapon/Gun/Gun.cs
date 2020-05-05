@@ -48,11 +48,12 @@ namespace MyGame
             Reload
         }
 
+        public int AmmoInMagazine => ammoInMagazine;
+        public int MaxAmmoInMagazine => maxAmmoInMagazine;
+
         public bool IsFireAble => (!IsEmptyMagazine) && (lastFireTimeStamp < Time.time);
         public bool IsEmptyMagazine => (ammoInMagazine <= 0);
         public bool IsFullMagazine => (ammoInMagazine >= maxAmmoInMagazine);
-
-        bool forceJamTrigger = false;
 
         float lastFireTimeStamp = 0.0f;
         float delayAfterReloadedTimeStamp = 0.0f;
