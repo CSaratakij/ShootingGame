@@ -125,6 +125,9 @@ namespace MyGame
             {
                 humaniodIK.DisableRotateY(true);
             }
+
+            //Test
+            UIController.Instance?.ShowInGameMenu();
         }
 
         void Update()
@@ -213,7 +216,7 @@ namespace MyGame
                         lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
                         isHipFireWeapon = true;
 
-                        humaniodIK.ToggleFireWeapon(true, Vector3.zero);
+                        humaniodIK.ToggleFireWeapon(true);
                     }
 
                     lastFireTimeStamp = (Time.time + fireTimeDuration);
@@ -328,7 +331,7 @@ namespace MyGame
             if (isHipFireWeapon && Time.time > lastHipFireTimeStamp)
             {
                 isHipFireWeapon = false;
-                humaniodIK.ToggleFireWeapon(false, Vector3.zero);
+                humaniodIK.ToggleFireWeapon(false);
             }
         }
 

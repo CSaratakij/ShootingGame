@@ -32,8 +32,8 @@ namespace MyGame
         float rotateRateY = 5.0f;
 
         int idleNameHash;
+        int idlePistolNameHash;
 
-        bool isInitChestOriginalRotation = false;
         bool isAiming = false;
         bool isFireWeapon = false;
 
@@ -41,6 +41,9 @@ namespace MyGame
         bool isPreviousFireWeapon = false;
 
         bool isDisableRotateY = false;
+
+        bool isInitChestIdleRotation = false;
+        bool isInitChestIdlePistolRotation = false;
 
         float currentAimRotateX;
         float currentAimRotateY;
@@ -50,9 +53,9 @@ namespace MyGame
         Animator animator;
         Transform chestBone;
 
-        Vector3 facingRotation;
+        Quaternion originalIdleChestRotation;
+        Quaternion originalIdlePistolChestRotation;
 
-        Quaternion originalChestRotation;
         Quaternion lastAimChestRotation;
 
         enum AnimLayer
@@ -67,19 +70,54 @@ namespace MyGame
             Initialize();
         }
 
+        void OnAnimatorIK(int layerIndex)
+        {
+            LayerHandler(layerIndex);
+        }
+
         void Initialize()
         {
             animator = GetComponent<Animator>();
             chestBone = animator.GetBoneTransform(HumanBodyBones.Chest);
 
             currentAimRotateY = maxAimRotateY;
-            originalChestRotation = Quaternion.identity;
-            idleNameHash = Animator.StringToHash("UpperArm.Pistol_Idle");
+
+            originalIdleChestRotation = Quaternion.identity;
+            originalIdlePistolChestRotation = Quaternion.identity;
+
+            idleNameHash = Animator.StringToHash("UpperArm.Idle");
+            idlePistolNameHash = Animator.StringToHash("UpperArm.Pistol_Idle");
         }
 
-        void OnAnimatorIK(int layerIndex)
+        void InitializeChestRotation()
         {
-            LayerHandler(layerIndex);
+            if (!isInitChestIdleRotation)
+            {
+                int expectLayer = (int) AnimLayer.UpperArm;
+                int hash = idleNameHash;
+
+                bool isPlayingIdleAnimation = (hash == animator.GetCurrentAnimatorStateInfo(expectLayer).fullPathHash);
+
+                if (isPlayingIdleAnimation)
+                {
+                    originalIdleChestRotation = chestBone.localRotation;
+                    isInitChestIdleRotation = true;
+                }
+            }
+
+            if (!isInitChestIdlePistolRotation)
+            {
+                int expectLayer = (int) AnimLayer.UpperArm;
+                int hash = idlePistolNameHash;
+
+                bool isPlayingIdleAnimation = (hash == animator.GetCurrentAnimatorStateInfo(expectLayer).fullPathHash);
+
+                if (isPlayingIdleAnimation)
+                {
+                    originalIdlePistolChestRotation = chestBone.localRotation;
+                    isInitChestIdlePistolRotation = true;
+                }
+            }
         }
 
         void LayerHandler(int layerIndex)
@@ -108,17 +146,7 @@ namespace MyGame
 
         void HandleUpperArmLayer()
         {
-            if (!isInitChestOriginalRotation)
-            {
-                int expectLayer = (int) AnimLayer.UpperArm;
-                bool isPlayingIdleAnimation = (idleNameHash == animator.GetCurrentAnimatorStateInfo(expectLayer).fullPathHash);
-
-                if (isPlayingIdleAnimation)
-                {
-                    originalChestRotation = Quaternion.Euler(chestBone.localRotation.eulerAngles.x, 0.0f, 0.0f);
-                    isInitChestOriginalRotation = true;
-                }
-            }
+            InitializeChestRotation();
 
             bool shouldLookAtTarget = (!isAiming && lookReference != null);
 
@@ -132,7 +160,22 @@ namespace MyGame
                 animator.SetLookAtWeight(0.0f);
             }
 
-            if (isAiming || isFireWeapon)
+            bool shouldFlickLowerArm = isAiming && isFireWeapon;
+
+            if (shouldFlickLowerArm)
+            {
+                Debug.Log("Fire");
+
+                animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1.0f);
+                animator.SetIKRotation(AvatarIKGoal.LeftHand, Quaternion.Euler(90, 0.0f, 0.0f));
+
+                animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1.0f);
+                animator.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.Euler(90, 0.0f, 0.0f));
+            }
+
+            bool shouldRotateChestYAxis = isAiming || isFireWeapon;
+
+            if (shouldRotateChestYAxis)
             {
                 float angleX = aimReference.rotation.eulerAngles.x;
 
@@ -157,7 +200,9 @@ namespace MyGame
 
                 if (shouldRotateChestBackWithSmooth)
                 {
-                    var rotRef = originalChestRotation;
+                    bool isHasWeapon = animator.GetBool("IsHasWeapon");
+
+                    var rotRef = isHasWeapon ? originalIdlePistolChestRotation : originalIdleChestRotation;
                     var rotCurrent = lastAimChestRotation;
 
                     lastAimChestRotation = Quaternion.Slerp(rotCurrent, rotRef, toNormalChestDamp);
@@ -210,13 +255,10 @@ namespace MyGame
             targetAimRotateY = value ? -absTargetAim : absTargetAim;
         }
 
-        // public void ToggleFireWeapon(bool value, Quaternion facingRotation)
-        public void ToggleFireWeapon(bool value, Vector3 facingRotation)
+        public void ToggleFireWeapon(bool value)
         {
             isPreviousFireWeapon = isFireWeapon;
             isFireWeapon = value;
-            // this.facingRotation = facingRotation;
-            this.facingRotation = facingRotation;
         }
 
         public void DisableRotateY(bool value)

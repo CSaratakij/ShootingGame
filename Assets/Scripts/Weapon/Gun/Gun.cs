@@ -20,7 +20,6 @@ namespace MyGame
         AudioClip[] audioClips;
 
         [Header("Setting")]
-
         [SerializeField]
         int damage;
 
@@ -167,8 +166,10 @@ namespace MyGame
 
         public void Pickup(Transform parent = null)
         {
-            rigidbody.isKinematic = true;
             rigidbody.detectCollisions = false;
+            rigidbody.useGravity = false;
+            rigidbody.isKinematic = true;
+            rigidbody.velocity = Vector3.zero;
 
             EnableCollider(false);
             transform.parent = parent;
@@ -186,8 +187,9 @@ namespace MyGame
 
             EnableCollider(true);
 
-            rigidbody.isKinematic = false;
             rigidbody.detectCollisions = true;
+            rigidbody.isKinematic = false;
+            rigidbody.useGravity = true;
         }
     }
 }
