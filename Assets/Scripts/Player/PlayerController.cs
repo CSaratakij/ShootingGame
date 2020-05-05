@@ -311,6 +311,8 @@ namespace MyGame
             animator.SetBool("IsPressShoot", isPressShoot);
             animator.SetBool("IsMove", isMove);
             animator.SetBool("IsAim", isAim);
+            animator.SetBool("IsGround", characterController.isGrounded);
+            animator.SetBool("IsHasWeapon", IsHasWeapon);
             animator.SetFloat("MoveX", inputVector.x);
             animator.SetFloat("MoveZ", inputVector.z);
             animator.SetFloat("NonZeroMoveX", nonZeroMoveX);

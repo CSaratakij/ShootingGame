@@ -74,7 +74,7 @@ namespace MyGame
 
             currentAimRotateY = maxAimRotateY;
             originalChestRotation = Quaternion.identity;
-            idleNameHash = Animator.StringToHash("UpperArm.Idle");
+            idleNameHash = Animator.StringToHash("UpperArm.Pistol_Idle");
         }
 
         void OnAnimatorIK(int layerIndex)
