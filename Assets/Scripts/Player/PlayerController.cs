@@ -255,9 +255,11 @@ namespace MyGame
 
             if (Input.GetKeyDown(KeyCode.R) && IsHasWeapon)
             {
-                if (!gun.IsFullMagazine)
+                bool canTriggerReload = !gun.IsFullMagazine || gun.IsEmptyMagazine;
+
+                if (canTriggerReload)
                 {
-                    AttemptReload(true);
+                    AttemptReload();
                 }
             }
 
@@ -523,7 +525,7 @@ namespace MyGame
 
         void AttemptReload(bool forceReload = false)
         {
-            bool shouldReload = !isStartReload && (gun.IsEmptyMagazine);
+            bool shouldReload = !isStartReload;
 
             if (forceReload || shouldReload)
             {
