@@ -6,7 +6,6 @@ using UnityEngine;
 namespace MyGame
 {
     [DisallowMultipleComponent]
-    [RequireComponent(typeof(AudioSource))]
     [RequireComponent(typeof(Rigidbody))]
     public class Gun : MonoBehaviour, IShootable, IPickable
     {
@@ -15,9 +14,13 @@ namespace MyGame
 
         [Header("General")]
         [SerializeField]
+        int maxPoolAudioSources = 5;
+
+        [SerializeField]
         AudioClip[] audioClips;
 
         [Header("Setting")]
+
         [SerializeField]
         int damage;
 
@@ -46,13 +49,18 @@ namespace MyGame
             Reload
         }
 
-        public bool IsEmptyMagazine => (ammoInMagazine <= 0);
         public bool IsFireAble => (!IsEmptyMagazine) && (lastFireTimeStamp < Time.time);
+        public bool IsEmptyMagazine => (ammoInMagazine <= 0);
+        public bool IsFullMagazine => (ammoInMagazine >= maxAmmoInMagazine);
+
+        bool forceJamTrigger = false;
 
         float lastFireTimeStamp = 0.0f;
+        float delayAfterReloadedTimeStamp = 0.0f;
 
-        AudioSource audioSource;
+        AudioSource[] audioSources;
         Collider[] colliders;
+        Coroutine reloadCallback;
 
         new Rigidbody rigidbody;
         RaycastHit hitInfo;
@@ -69,9 +77,16 @@ namespace MyGame
 
         void Initialize()
         {
-            audioSource = GetComponent<AudioSource>();
             rigidbody = GetComponent<Rigidbody>();
             colliders = GetComponents<Collider>();
+
+            audioSources = new AudioSource[maxPoolAudioSources];
+
+            for (int i = 0; i < maxPoolAudioSources; ++i)
+            {
+                audioSources[i] = gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
+                audioSources[i].playOnAwake = false;
+            }
         }
 
         void ApplyGravity()
@@ -89,13 +104,15 @@ namespace MyGame
 
         void PlaySound(GunSound sound)
         {
-            if (audioSource.isPlaying)
+            foreach (AudioSource source in audioSources)
             {
-                audioSource.Stop();
+                if (source.isPlaying)
+                    continue;
+                
+                int i = (int) sound;
+                source.PlayOneShot(audioClips[i]);
+                break;
             }
-
-            int i = (int) sound;
-            audioSource.PlayOneShot(audioClips[i]);
         }
 
         void EnableCollider(bool value = true)
@@ -126,13 +143,21 @@ namespace MyGame
                     Debug.Log("Shoot at nothing!");
                 }
             }
-            else if (IsEmptyMagazine)
+            else
             {
-                hitInfo = EmptyHitInfo;
-                PlaySound(GunSound.PullTriggerWithEmptyMagazine);
+                if (IsEmptyMagazine)
+                {
+                    hitInfo = EmptyHitInfo;
+                    PlaySound(GunSound.PullTriggerWithEmptyMagazine);
+                }
             }
 
             callback?.Invoke(canFireSuccess, hitInfo);
+        }
+
+        public void PlayReloadSound()
+        {
+            PlaySound(GunSound.Reload);
         }
 
         public void Reload()
@@ -150,7 +175,6 @@ namespace MyGame
 
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
-
         }
 
         public void Drop(Vector3 dropPosition)

@@ -94,6 +94,8 @@ namespace MyGame
         float lastHipFireTimeStamp = 0.0f;
         float hipFireTimeDuration = 0.5f;
 
+        bool isPressShoot = false;
+
         bool isStartRun = false;
         bool isStartReload = false;
 
@@ -109,13 +111,14 @@ namespace MyGame
         CharacterController characterController;
 
         AimState aimState;
+
         GunHand currentHand = GunHand.Right;
+        int currentHandIndex = (int) GunHand.Right;
 
         void Awake()
         {
             Initialize();
             HideCursor();
-            HideGunSide(GunHand.Left);
             SetGunSide(GunHand.Right);
         }
 
@@ -172,7 +175,8 @@ namespace MyGame
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
             bool shouldZoomCamera = (AimState.Aim == aimState);
 
-            bool canPullTrigger = Input.GetButtonDown("Fire1") && IsHasWeapon && !isStartReload;
+            isPressShoot = Input.GetButtonDown("Fire1");
+            bool canPullTrigger = isPressShoot && IsHasWeapon && !isStartReload;
 
             if (canPullTrigger)
             {
@@ -180,7 +184,14 @@ namespace MyGame
 
                 gun?.PullTrigger(ray, (success, hitInfo) => {
                     if (!success)
+                    {
+                        if (gun.IsEmptyMagazine)
+                        {
+                            AttemptReload();
+                        }
+
                         return;
+                    }
 
                     if (AimState.None == aimState)
                     {
@@ -247,13 +258,9 @@ namespace MyGame
 
             if (Input.GetKeyDown(KeyCode.R) && IsHasWeapon)
             {
-                bool shouldReload = !isStartReload && gun.IsEmptyMagazine;
-
-                if (shouldReload)
+                if (!gun.IsFullMagazine)
                 {
-                    isStartReload = true;
-                    //play reload animation here...
-                    //invoke callback by animation events
+                    AttemptReload(true);
                 }
             }
 
@@ -301,11 +308,13 @@ namespace MyGame
             float moveAnimationMultipiler = moveSpeedMultipiler > 1.0f ? 1.1f : 1.0f;
 
             animator.SetFloat("MoveMultipiler", moveAnimationMultipiler);
+            animator.SetBool("IsPressShoot", isPressShoot);
             animator.SetBool("IsMove", isMove);
             animator.SetBool("IsAim", isAim);
             animator.SetFloat("MoveX", inputVector.x);
             animator.SetFloat("MoveZ", inputVector.z);
             animator.SetFloat("NonZeroMoveX", nonZeroMoveX);
+            animator.SetFloat("GunHandSide", currentHandIndex);
         }
 
         void FlagHandler()
@@ -447,7 +456,6 @@ namespace MyGame
             }
         }
 
-//todo: don't forget to wrap a gun from left to right hand
         void SwitchGunSideHandler()
         {
             if (!isFireWeapon)
@@ -495,12 +503,6 @@ namespace MyGame
             }
         }
 
-        void HideGunSide(GunHand side)
-        {
-            var indice = (int) side;
-            gunHandSide[indice].gameObject.SetActive(false);
-        }
-
         void SetGunSide(GunHand side)
         {
             var currentIndice = (int) currentHand;
@@ -510,13 +512,30 @@ namespace MyGame
                 return;
 
             currentHand = side;
+            currentHandIndex = indice;
 
-            gunHandSide[currentIndice].gameObject.SetActive(false);
-            gunHandSide[indice].gameObject.SetActive(true);
+            if (IsHasWeapon)
+            {
+                gun.transform.parent = gunHandSide[indice];
+                gun.transform.localPosition = Vector3.zero;
+                gun.transform.localRotation = Quaternion.identity;
+            }
         }
 
-//callback from animation
-        void ReloadGunCallback()
+        void AttemptReload(bool forceReload = false)
+        {
+            bool shouldReload = !isStartReload && (gun.IsEmptyMagazine);
+
+            if (forceReload || shouldReload)
+            {
+                isStartReload = true;
+
+                animator.SetTrigger("Reload");
+                gun.PlayReloadSound();
+            }
+        }
+
+        void ReloadGunFinish()
         {
             gun?.Reload();
             isStartReload = false;
