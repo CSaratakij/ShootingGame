@@ -21,9 +21,6 @@ namespace MyGame
         NetworkType networkType;
 
         [SerializeField]
-        Transform tempDir;
-
-        [SerializeField]
         Transform dropItemRef;
 
         [SerializeField]
@@ -203,11 +200,11 @@ namespace MyGame
                         }
                         else
                         {
-                            var forwardDir = transform.forward;
-                            var relativeVector = (tempDir.position - transform.position);
+                            var facingDir = new Vector3(inputVector.x, 0.0f, inputVector.z);
+                            var aimDir = rotationBasis.InverseTransformDirection(rotationBasis.forward);
 
-                            var product = Vector3.Dot(forwardDir, relativeVector);
-                            hipShootType = (product <= 4.5f) ? 2 : 1;
+                            var product = Vector3.Dot(facingDir, aimDir);
+                            hipShootType = (product > 0.1f) ? 1 : 2;
                         }
 
                         animator.SetFloat("HipShootType", hipShootType);
