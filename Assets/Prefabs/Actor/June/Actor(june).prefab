@@ -1,5 +1,49 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &510332042
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 510332044}
+  - component: {fileID: 510332043}
+  m_Layer: 0
+  m_Name: DummyCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &510332044
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510332042}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4554959793865774051}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &510332043
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 510332042}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &657731248
 GameObject:
   m_ObjectHideFlags: 0
@@ -9,7 +53,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 657731249}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: DropItemRef
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -121,6 +165,7 @@ Transform:
   m_Children:
   - {fileID: 4554959794243390245}
   - {fileID: 657731249}
+  - {fileID: 510332044}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -159,6 +204,7 @@ MonoBehaviour:
   dropItemRef: {fileID: 657731249}
   animator: {fileID: 771088013816046005}
   humaniodIK: {fileID: 2396974354330822570}
+  dummyCollider: {fileID: 510332043}
   gun: {fileID: 0}
   gunHandSide:
   - {fileID: 2396974354351871867}
@@ -169,9 +215,13 @@ MonoBehaviour:
   gravity: 40
   rotationDamp: 0.1
   maxPickItemDistance: 12
+  maxDropItemDistance: 4
   itemLayer:
     serializedVersion: 2
     m_Bits: 512
+  defaultLayer:
+    serializedVersion: 2
+    m_Bits: 1
 --- !u!1 &4554959794243390246
 GameObject:
   m_ObjectHideFlags: 0
@@ -181,7 +231,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4554959794243390245}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Model
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -8,10 +8,13 @@ namespace MyGame
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
+        const int MAX_PENETRATION_TEST_BUFFER_SIZE = 3;
+
         static readonly Vector3 VIEWPORT_CENTER = new Vector3(0.5f, 0.5f, 0.0f);
         static readonly Quaternion Y_90_DEGREE = Quaternion.Euler(0, 90.0f, 0);
         static readonly Quaternion Y_NEGATIVE_90_DEGREE = Quaternion.Euler(0, -90.0f, 0);
         static readonly Quaternion Y_180_DEGREE = Quaternion.Euler(0, 180.0f, 0);
+        static readonly Quaternion DROP_ITEM_ROTATION = Quaternion.Euler(0, 0, 90.0f);
 
         [Header("General")]
         [SerializeField]
@@ -28,6 +31,9 @@ namespace MyGame
 
         [SerializeField]
         HumaniodIK humaniodIK;
+
+        [SerializeField]
+        BoxCollider dummyCollider;
 
         [SerializeField]
         Gun gun;
@@ -55,7 +61,13 @@ namespace MyGame
         float maxPickItemDistance = 5.0f;
 
         [SerializeField]
+        float maxDropItemDistance = 4.0f;
+
+        [SerializeField]
         LayerMask itemLayer;
+
+        [SerializeField]
+        LayerMask defaultLayer;
 
         public enum NetworkType
         {
@@ -114,6 +126,8 @@ namespace MyGame
         GunHand currentHand = GunHand.Right;
         int currentHandIndex = (int) GunHand.Right;
 
+        Collider[] penetrationBuffer;
+
         void Awake()
         {
             Initialize();
@@ -156,6 +170,10 @@ namespace MyGame
             characterController = GetComponent<CharacterController>();
 
             rotationBasis = camera.ExternalBasis;
+            penetrationBuffer = new Collider[MAX_PENETRATION_TEST_BUFFER_SIZE];
+
+            dummyCollider.enabled = false;
+            dummyCollider.isTrigger = true;
         }
 
         void InputHandler()
@@ -299,6 +317,14 @@ namespace MyGame
 
                         if (gun)
                         {
+                            var collider = gun.GetComponent<BoxCollider>();
+
+                            if (collider)
+                            {
+                                dummyCollider.center = collider.center;
+                                dummyCollider.size = collider.size;
+                            }
+
                             gun.Pickup(gunHandSide[(int) GunHand.Right]);
 
                             hudInfo.currentMagazine = gun.AmmoInMagazine;
@@ -315,8 +341,56 @@ namespace MyGame
                 if (isStartReload)
                     return;
 
-                gun?.Drop(dropItemRef.position);
+                var origin = transform.position;
+                origin.y = dropItemRef.position.y;
+
+                RaycastHit hitInfo;
+                Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
+
+                var dropPosition = Vector3.zero;
+                bool shouldDropToAimDirection = Physics.Raycast(ray, out hitInfo, 10.0f, defaultLayer);
+
+                if (shouldDropToAimDirection)
+                {
+                    var expectPosition = ray.origin + (ray.direction.normalized * Mathf.Clamp(hitInfo.distance, 0.0f, maxDropItemDistance));
+                    int count = Physics.OverlapSphereNonAlloc(expectPosition, 1.0f, penetrationBuffer, defaultLayer);
+
+                    if (count > 0)
+                        dummyCollider.enabled = true;
+
+                    for (int i = 0; i < count; ++i)
+                    {
+                        var collider = penetrationBuffer[i];
+
+                        Vector3 otherPosition = collider.gameObject.transform.position;
+                        Quaternion otherRotation = collider.gameObject.transform.rotation;
+
+                        Vector3 direction;
+                        float distance;
+
+                        bool overlapped = Physics.ComputePenetration(
+                                        dummyCollider, expectPosition, DROP_ITEM_ROTATION,
+                                        collider, otherPosition, otherRotation,
+                                        out direction, out distance);
+                        
+                        if (overlapped)
+                        {
+                            var offset = direction * distance;
+                            expectPosition += offset;
+                        }
+                    }
+
+                    dropPosition = expectPosition;
+                }
+                else
+                {
+                    dropPosition = gun.transform.position;
+                }
+
+                gun.Drop(dropPosition);
+
                 gun = null;
+                dummyCollider.enabled = false;
 
                 hudInfo.currentMagazine = 0;
                 hudInfo.maxMagazine = 0;
