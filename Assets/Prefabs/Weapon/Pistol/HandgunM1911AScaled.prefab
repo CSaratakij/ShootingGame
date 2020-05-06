@@ -417,7 +417,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 5831729c8ba542c498cb3761e2b051ca, type: 3}
   - {fileID: 8300000, guid: 13cea164e1a8f104abc2b9962c837d1e, type: 3}
   damage: 30
-  fireRate: 0.19
+  fireRate: 0.18
   maxDistance: 1000
   ammoInMagazine: 12
   maxAmmoInMagazine: 12

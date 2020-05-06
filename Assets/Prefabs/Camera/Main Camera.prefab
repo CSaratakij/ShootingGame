@@ -105,7 +105,7 @@ MonoBehaviour:
   zoomFOV: 35
   zoomRate: 120
   zoomOutRate: 3
-  switchSideRate: 5
+  switchSideRate: 8
   rotationClamp: 0.2
   mouseSensitivity: {x: 1, y: 1}
   normalOffset: {x: 1, y: 3.3, z: 3}

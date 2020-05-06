@@ -5,6 +5,7 @@ using UnityEngine;
 namespace MyGame
 {
     [DisallowMultipleComponent]
+    [RequireComponent(typeof(AudioSource))]
     [RequireComponent(typeof(CharacterController))]
     public class PlayerController : MonoBehaviour
     {
@@ -40,6 +41,9 @@ namespace MyGame
 
         [SerializeField]
         Transform[] gunHandSide;
+
+        [SerializeField]
+        AudioClip[] audioClips;
 
         [Header("Setting")]
         [SerializeField]
@@ -87,6 +91,12 @@ namespace MyGame
             Right,
         }
 
+        enum SFX
+        {
+            Pickup,
+            Drop
+        }
+
         public uint ID { get; set; }
         public bool IsHasWeapon => (gun != null);
 
@@ -122,6 +132,7 @@ namespace MyGame
         CharacterController characterController;
 
         AimState aimState;
+        AudioSource audioSource;
 
         GunHand currentHand = GunHand.Right;
         int currentHandIndex = (int) GunHand.Right;
@@ -168,6 +179,8 @@ namespace MyGame
         {
             camera = Camera.main.GetComponent<ThirdPersonCamera>();
             characterController = GetComponent<CharacterController>();
+
+            audioSource = GetComponent<AudioSource>();
 
             rotationBasis = camera.ExternalBasis;
             penetrationBuffer = new Collider[MAX_PENETRATION_TEST_BUFFER_SIZE];
@@ -301,107 +314,12 @@ namespace MyGame
 
             if (Input.GetKeyDown(KeyCode.F))
             {
-                Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
-                RaycastHit pickUpHitInfo;
-
-                if (Physics.Raycast(ray, out pickUpHitInfo, 100.0f, itemLayer))
-                {
-                    if (pickUpHitInfo.transform == null)
-                        return;
-
-                    var distance = pickUpHitInfo.transform.position - transform.position;
-                    bool allowPickup = distance.sqrMagnitude <= (maxPickItemDistance * maxPickItemDistance);
-
-                    if (!allowPickup)
-                        return;
-
-                    bool isItemIsAGun = pickUpHitInfo.transform.gameObject.CompareTag("Gun");
-
-                    if (isItemIsAGun)
-                    {
-                        gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
-
-                        if (gun)
-                        {
-                            var collider = gun.GetComponent<BoxCollider>();
-
-                            if (collider)
-                            {
-                                dummyCollider.center = collider.center;
-                                dummyCollider.size = collider.size;
-                            }
-
-                            gun.Pickup(gunHandSide[(int) GunHand.Right]);
-
-                            hudInfo.currentMagazine = gun.AmmoInMagazine;
-                            hudInfo.maxMagazine = gun.MaxAmmoInMagazine;
-
-                            UpdateHUD(hudInfo);
-                        }
-                    }
-                }
+                PickUpNewGun();
             }
 
-            if (Input.GetKeyDown(KeyCode.G) && IsHasWeapon)
+            if (Input.GetKeyDown(KeyCode.G))
             {
-                if (isStartReload)
-                    return;
-
-                var origin = transform.position;
-                origin.y = dropItemRef.position.y;
-
-                RaycastHit hitInfo;
-                Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
-
-                var dropPosition = Vector3.zero;
-                bool shouldDropToAimDirection = Physics.Raycast(ray, out hitInfo, 10.0f, defaultLayer);
-
-                if (shouldDropToAimDirection)
-                {
-                    var expectPosition = ray.origin + (ray.direction.normalized * Mathf.Clamp(hitInfo.distance, 0.0f, maxDropItemDistance));
-                    int count = Physics.OverlapSphereNonAlloc(expectPosition, 1.0f, penetrationBuffer, defaultLayer);
-
-                    if (count > 0)
-                        dummyCollider.enabled = true;
-
-                    for (int i = 0; i < count; ++i)
-                    {
-                        var collider = penetrationBuffer[i];
-
-                        Vector3 otherPosition = collider.gameObject.transform.position;
-                        Quaternion otherRotation = collider.gameObject.transform.rotation;
-
-                        Vector3 direction;
-                        float distance;
-
-                        bool overlapped = Physics.ComputePenetration(
-                                        dummyCollider, expectPosition, DROP_ITEM_ROTATION,
-                                        collider, otherPosition, otherRotation,
-                                        out direction, out distance);
-                        
-                        if (overlapped)
-                        {
-                            var offset = direction * distance;
-                            expectPosition += offset;
-                        }
-                    }
-
-                    dropPosition = expectPosition;
-                }
-                else
-                {
-                    dropPosition = gun.transform.position;
-                }
-
-                gun.Drop(dropPosition);
-
-                gun = null;
-                dummyCollider.enabled = false;
-
-                hudInfo.currentMagazine = 0;
-                hudInfo.maxMagazine = 0;
-
-                UpdateHUD(hudInfo);
+                DropCurrentGun();
             }
         }
 
@@ -631,6 +549,123 @@ namespace MyGame
             }
         }
 
+        void PickUpNewGun()
+        {
+            if (isStartReload)
+                return;
+
+            if (IsHasWeapon)
+            {
+                DropCurrentGun();
+            }
+
+            Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
+            RaycastHit pickUpHitInfo;
+
+            if (Physics.Raycast(ray, out pickUpHitInfo, 100.0f, itemLayer))
+            {
+                if (pickUpHitInfo.transform == null)
+                    return;
+
+                var distance = pickUpHitInfo.transform.position - transform.position;
+                bool allowPickup = distance.sqrMagnitude <= (maxPickItemDistance * maxPickItemDistance);
+
+                if (!allowPickup)
+                    return;
+
+                bool isItemIsAGun = pickUpHitInfo.transform.gameObject.CompareTag("Gun");
+
+                if (isItemIsAGun)
+                {
+                    gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
+
+                    if (gun)
+                    {
+                        var collider = gun.GetComponent<BoxCollider>();
+
+                        if (collider)
+                        {
+                            dummyCollider.center = collider.center;
+                            dummyCollider.size = collider.size;
+                        }
+
+                        gun.Pickup(gunHandSide[(int) GunHand.Right]);
+
+                        hudInfo.currentMagazine = gun.AmmoInMagazine;
+                        hudInfo.maxMagazine = gun.MaxAmmoInMagazine;
+
+                        UpdateHUD(hudInfo);
+                        PlaySFXSound(SFX.Pickup);
+                    }
+                }
+            }
+        }
+
+        void DropCurrentGun()
+        {
+            if (!IsHasWeapon)
+                return;
+
+            if (isStartReload)
+                return;
+
+            var origin = transform.position;
+            origin.y = dropItemRef.position.y;
+
+            RaycastHit hitInfo;
+            Ray ray = camera.Camera.ViewportPointToRay(VIEWPORT_CENTER);
+
+            var dropPosition = Vector3.zero;
+            bool shouldDropToAimDirection = Physics.Raycast(ray, out hitInfo, 10.0f, defaultLayer);
+
+            if (shouldDropToAimDirection)
+            {
+                var expectPosition = ray.origin + (ray.direction.normalized * Mathf.Clamp(hitInfo.distance, 0.0f, maxDropItemDistance));
+                int count = Physics.OverlapSphereNonAlloc(expectPosition, 1.0f, penetrationBuffer, defaultLayer);
+
+                if (count > 0)
+                    dummyCollider.enabled = true;
+
+                for (int i = 0; i < count; ++i)
+                {
+                    var collider = penetrationBuffer[i];
+
+                    Vector3 otherPosition = collider.gameObject.transform.position;
+                    Quaternion otherRotation = collider.gameObject.transform.rotation;
+
+                    Vector3 direction;
+                    float distance;
+
+                    bool overlapped = Physics.ComputePenetration(
+                                    dummyCollider, expectPosition, DROP_ITEM_ROTATION,
+                                    collider, otherPosition, otherRotation,
+                                    out direction, out distance);
+                    
+                    if (overlapped)
+                    {
+                        var offset = direction * distance;
+                        expectPosition += offset;
+                    }
+                }
+
+                dropPosition = expectPosition;
+            }
+            else
+            {
+                dropPosition = gun.transform.position;
+            }
+
+            gun.Drop(dropPosition);
+
+            gun = null;
+            dummyCollider.enabled = false;
+
+            hudInfo.currentMagazine = 0;
+            hudInfo.maxMagazine = 0;
+
+            UpdateHUD(hudInfo);
+        }
+
         void AttemptReload(bool forceReload = false)
         {
             bool shouldReload = !isStartReload;
@@ -656,6 +691,17 @@ namespace MyGame
         void UpdateHUD(HUDInfo hudInfo)
         {
             UIHUDController.Instance?.UpdateUI(hudInfo);
+        }
+
+        void PlaySFXSound(SFX sound)
+        {
+            if (audioSource.isPlaying)
+            {
+                audioSource.Stop();
+            }
+
+            int i = (int) sound;
+            audioSource.PlayOneShot(audioClips[i]);
         }
     }
 }
