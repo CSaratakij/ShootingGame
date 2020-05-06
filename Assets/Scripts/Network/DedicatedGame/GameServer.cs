@@ -1,4 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.IO;
+using System.Text;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using ENet;
@@ -8,7 +11,7 @@ using EventType = ENet.EventType;
 namespace MyGame.Network
 {
     [DisallowMultipleComponent]
-    public sealed class GameServer : MonoBehaviour
+    public sealed class GameServer : MonoBehaviour, INetworkCommand
     {
         const int MAX_CHANNEL = 3;
         const int DEFAULT_CHANNEL = 0;
@@ -29,6 +32,12 @@ namespace MyGame.Network
         Address address;
         Host server;
         Event netEvent;
+
+        byte[] buffer;
+        MemoryStream stream;
+
+        BinaryWriter writer;
+        BinaryReader reader;
 
         void OnGUI()
         {
@@ -85,7 +94,24 @@ namespace MyGame.Network
             server.Create(address, maxClient, MAX_CHANNEL);
             server.PreventConnections(false);
 
+            buffer = new byte[1024];
+            stream = new MemoryStream(buffer);
+            writer = new BinaryWriter(stream);
+
             Debug.Log($"Game server start on : {port}");
+        }
+
+        void InitWriter(int size)
+        {
+            buffer = new byte[size];
+            stream = new MemoryStream(buffer);
+            writer = new BinaryWriter(stream);
+        }
+
+        void InitReader(byte[] buffer)
+        {
+            stream = new MemoryStream(buffer);
+            reader = new BinaryReader(stream);
         }
 
         void ConnectionHandler()
@@ -115,6 +141,7 @@ namespace MyGame.Network
 
                 case EventType.Receive:
                     Debug.Log("Packet received from - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP + ", Channel ID: " + netEvent.ChannelID + ", Data length: " + netEvent.Packet.Length);
+                    HandlePacket(ref netEvent);
                     netEvent.Packet.Dispose();
                     break;
             }
@@ -124,6 +151,63 @@ namespace MyGame.Network
         {
             server.Flush();
             Library.Deinitialize();
+        }
+
+        void HandlePacket(ref Event e)
+        {
+            var readBuffer = new byte[e.Packet.Length];
+            var readStream = new MemoryStream(readBuffer);
+            var reader = new BinaryReader(readStream);
+
+            readStream.Position = 0;
+            netEvent.Packet.CopyTo(readBuffer);
+
+            byte commandID = reader.ReadByte();
+            var command = (NetworkCommand) commandID;
+
+            OnNetworkCommand(e, command, reader);
+        }
+
+        public void Send(byte channelID, byte[] data, Action<bool> callback = null)
+        {
+            // var packet = default(Packet);
+            // packet.Create(data);
+
+            // peer.Send(channelID, ref packet);
+
+            // callback?.Invoke(true);
+        }
+
+        public void OnNetworkCommand(Event e, NetworkCommand command, BinaryReader reader)
+        {
+            Debug.Log("Get Command : " + command.ToString());
+
+            switch (command)
+            {
+                case NetworkCommand.SendMessage:
+                {
+                    var sender = e.Peer.ID;
+                    var message = reader.ReadString();
+
+                    Debug.Log("Receive message : " + message);
+
+                    var bufSize = sizeof(byte) + sizeof(uint) + Encoding.Default.GetByteCount(message) + 1;
+                    InitWriter(bufSize);
+
+                    writer.Write((byte) command);
+                    writer.Write(sender);
+                    writer.Write(message);
+
+                    var packet = default(Packet);
+                    packet.Create(buffer);
+
+                    server.Broadcast(0, ref packet);
+                }
+                break;
+
+                default:
+                break;
+            }
         }
     }
 }

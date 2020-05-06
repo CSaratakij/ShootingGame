@@ -146,6 +146,7 @@ GameObject:
   - component: {fileID: 6743376081564374700}
   - component: {fileID: 4554959793865774050}
   - component: {fileID: 4554959793865774049}
+  - component: {fileID: 2396974353538865389}
   m_Layer: 8
   m_Name: Actor(june)
   m_TagString: Player
@@ -297,6 +298,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isControlable: 1
+  isStopProcessInput: 0
   networkType: 0
   dropItemRef: {fileID: 657731249}
   animator: {fileID: 771088013816046005}
@@ -322,6 +324,19 @@ MonoBehaviour:
   defaultLayer:
     serializedVersion: 2
     m_Bits: 1
+--- !u!114 &2396974353538865389
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4554959793865774076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 187209f23b067234fa2a5e6607eab30b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncType: -1
 --- !u!1 &4554959794243390246
 GameObject:
   m_ObjectHideFlags: 0

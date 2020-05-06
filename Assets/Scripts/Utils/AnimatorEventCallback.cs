@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace MyGame
 {
@@ -12,6 +10,11 @@ namespace MyGame
         void ReloadGunFinish()
         {
             listener?.SendMessage("ReloadGunFinish");
+        }
+
+        void Dead()
+        {
+            listener?.SendMessage("Dead");
         }
     }
 }

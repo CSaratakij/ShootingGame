@@ -22,6 +22,9 @@ namespace MyGame
         bool isControlable;
 
         [SerializeField]
+        bool isStopProcessInput;
+
+        [SerializeField]
         NetworkType networkType;
 
         [SerializeField]
@@ -192,6 +195,12 @@ namespace MyGame
 
         void InputHandler()
         {
+            if (isStopProcessInput)
+            {
+                inputVector = Vector3.zero;
+                return;
+            }
+
             inputVector.x = Input.GetAxis("Horizontal");
             inputVector.z = Input.GetAxis("Vertical");
 
@@ -710,6 +719,17 @@ namespace MyGame
             UpdateHUD(hudInfo);
         }
 
+        void Dead()
+        {
+            if (isStartReload)
+            {
+                isStartReload = false;
+                gun?.StopReloadSound();
+            }
+            
+            StopProcessInput(true);
+        }
+
         void UpdateHUD(HUDInfo hudInfo)
         {
             UIHUDController.Instance?.UpdateUI(hudInfo);
@@ -724,6 +744,11 @@ namespace MyGame
 
             int i = (int) sound;
             audioSource.PlayOneShot(audioClips[i]);
+        }
+
+        public void StopProcessInput(bool value = true)
+        {
+            isStopProcessInput = value;
         }
     }
 }

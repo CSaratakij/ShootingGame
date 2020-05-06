@@ -63,6 +63,7 @@ namespace MyGame
         bool isHasOwner = false;
 
         Animator animator;
+        AudioSource reloadSoundSource;
         AudioSource[] audioSources;
         Collider[] colliders;
         Coroutine reloadCallback;
@@ -126,6 +127,11 @@ namespace MyGame
                     continue;
                 
                 int i = (int) sound;
+
+                if (GunSound.Reload == sound)
+                {
+                    reloadSoundSource = source;
+                }
 
                 if (delay > 0.0f)
                 {
@@ -191,6 +197,19 @@ namespace MyGame
         public void PlayReloadSound()
         {
             PlaySound(GunSound.Reload);
+        }
+
+        public void StopReloadSound()
+        {
+            if (!reloadSoundSource)
+            {
+                return;
+            }
+
+            if (reloadSoundSource.isPlaying)
+            {
+                reloadSoundSource.Stop();
+            }
         }
 
         public void PlayDryFireSound()
