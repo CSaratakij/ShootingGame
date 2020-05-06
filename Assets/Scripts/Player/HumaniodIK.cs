@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿//todo: seperate hip fire here...
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -33,17 +34,23 @@ namespace MyGame
 
         int idleNameHash;
         int idlePistolNameHash;
+        int aimPistolNameHash;
+
+        bool isStartFlicking = false;
 
         bool isAiming = false;
         bool isFireWeapon = false;
+        bool isHipFireWeapon = false;
 
         bool isPreviousAiming = false;
         bool isPreviousFireWeapon = false;
+        bool isPreviousHipFireWeapon = false;
 
         bool isDisableRotateY = false;
 
         bool isInitChestIdleRotation = false;
         bool isInitChestIdlePistolRotation = false;
+        bool isInitLowerArmRotation = false;
 
         float currentAimRotateX;
         float currentAimRotateY;
@@ -51,12 +58,21 @@ namespace MyGame
         float targetAimRotateY;
 
         Animator animator;
+
         Transform chestBone;
+        Transform leftLowerArmBone;
+        Transform rightLowerArmBone;
 
         Quaternion originalIdleChestRotation;
         Quaternion originalIdlePistolChestRotation;
 
         Quaternion lastAimChestRotation;
+
+        Quaternion originalLeftLowerArmRotation;
+        Quaternion originalRightLowerArmRotation;
+
+        Quaternion lastLeftLowerArmRotation;
+        Quaternion lastRightLowerArmRotation;
 
         enum AnimLayer
         {
@@ -78,18 +94,25 @@ namespace MyGame
         void Initialize()
         {
             animator = GetComponent<Animator>();
+
             chestBone = animator.GetBoneTransform(HumanBodyBones.Chest);
+            leftLowerArmBone = animator.GetBoneTransform(HumanBodyBones.LeftLowerArm);
+            rightLowerArmBone = animator.GetBoneTransform(HumanBodyBones.RightLowerArm);
 
             currentAimRotateY = maxAimRotateY;
 
             originalIdleChestRotation = Quaternion.identity;
             originalIdlePistolChestRotation = Quaternion.identity;
 
+            originalLeftLowerArmRotation = Quaternion.identity;
+            originalRightLowerArmRotation = Quaternion.identity;
+
             idleNameHash = Animator.StringToHash("UpperArm.Idle");
             idlePistolNameHash = Animator.StringToHash("UpperArm.Pistol_Idle");
+            aimPistolNameHash = Animator.StringToHash("UpperArm.Aim_Idle");
         }
 
-        void InitializeChestRotation()
+        void InitializeOriginalRotation()
         {
             if (!isInitChestIdleRotation)
             {
@@ -116,6 +139,22 @@ namespace MyGame
                 {
                     originalIdlePistolChestRotation = chestBone.localRotation;
                     isInitChestIdlePistolRotation = true;
+                }
+            }
+
+            if (!isInitLowerArmRotation)
+            {
+                int expectLayer = (int) AnimLayer.UpperArm;
+                int hash = aimPistolNameHash;
+
+                bool isPlayingPistolAim = (hash == animator.GetCurrentAnimatorStateInfo(expectLayer).fullPathHash);
+
+                if (isPlayingPistolAim)
+                {
+                    originalLeftLowerArmRotation = leftLowerArmBone.localRotation;
+                    originalRightLowerArmRotation = rightLowerArmBone.localRotation;
+
+                    isInitLowerArmRotation = true;
                 }
             }
         }
@@ -146,7 +185,7 @@ namespace MyGame
 
         void HandleUpperArmLayer()
         {
-            InitializeChestRotation();
+            InitializeOriginalRotation();
 
             bool shouldLookAtTarget = (!isAiming && lookReference != null);
 
@@ -160,26 +199,34 @@ namespace MyGame
                 animator.SetLookAtWeight(0.0f);
             }
 
-            bool shouldFlickLowerArm = isAiming && isFireWeapon;
+            bool shouldFlickLowerArm = !isStartFlicking && (isAiming && isFireWeapon);
 
             if (shouldFlickLowerArm)
             {
-                Debug.Log("Fire");
+                // animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1.0f);
+                // animator.SetIKRotation(AvatarIKGoal.LeftHand, Quaternion.Euler(90, 0.0f, 0.0f));
 
-                animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1.0f);
-                animator.SetIKRotation(AvatarIKGoal.LeftHand, Quaternion.Euler(90, 0.0f, 0.0f));
+                // animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1.0f);
+                // animator.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.Euler(90, 0.0f, 0.0f));
 
-                animator.SetIKRotationWeight(AvatarIKGoal.RightHand, 1.0f);
-                animator.SetIKRotation(AvatarIKGoal.RightHand, Quaternion.Euler(90, 0.0f, 0.0f));
+                // animator.SetBoneLocalRotation(HumanBodyBones.LeftLowerArm, Quaternion.Euler(0, 0, -24));
+                // animator.SetBoneLocalRotation(HumanBodyBones.RightLowerArm, Quaternion.Euler(0, 0, -24));
+            }
+            else
+            {
+                if (isAiming)
+                {
+                    //rotate back to aim
+                }
             }
 
-            bool shouldRotateChestYAxis = isAiming || isFireWeapon;
+            bool shouldRotateChestYAxis = isAiming || isHipFireWeapon || isFireWeapon;
 
             if (shouldRotateChestYAxis)
             {
                 float angleX = aimReference.rotation.eulerAngles.x;
 
-                bool shouldNegateChestRotation = (!isAiming && isFireWeapon);
+                bool shouldNegateChestRotation = (!isAiming && isHipFireWeapon);
 
                 if (shouldNegateChestRotation)
                 {
@@ -196,7 +243,7 @@ namespace MyGame
             }
             else
             {
-                bool shouldRotateChestBackWithSmooth = (isPreviousAiming && !isAiming) || (isPreviousFireWeapon && !isFireWeapon);
+                bool shouldRotateChestBackWithSmooth = (isPreviousAiming && !isAiming) || (isPreviousFireWeapon && !isFireWeapon) || (isPreviousHipFireWeapon && !isHipFireWeapon);
 
                 if (shouldRotateChestBackWithSmooth)
                 {
@@ -259,6 +306,12 @@ namespace MyGame
         {
             isPreviousFireWeapon = isFireWeapon;
             isFireWeapon = value;
+        }
+
+        public void ToggleHipFireWeapon(bool value)
+        {
+            isPreviousHipFireWeapon = isHipFireWeapon;
+            isHipFireWeapon = value;
         }
 
         public void DisableRotateY(bool value)

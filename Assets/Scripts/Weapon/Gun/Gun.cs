@@ -7,6 +7,7 @@ namespace MyGame
 {
     [DisallowMultipleComponent]
     [RequireComponent(typeof(Rigidbody))]
+    [RequireComponent(typeof(Animator))]
     public class Gun : MonoBehaviour, IShootable, IPickable
     {
         static readonly RaycastHit EmptyHitInfo = new RaycastHit();
@@ -58,6 +59,7 @@ namespace MyGame
         float lastFireTimeStamp = 0.0f;
         float delayAfterReloadedTimeStamp = 0.0f;
 
+        Animator animator;
         AudioSource[] audioSources;
         Collider[] colliders;
         Coroutine reloadCallback;
@@ -70,6 +72,11 @@ namespace MyGame
             Initialize();
         }
 
+        void LateUpdate()
+        {
+            AnimationHandler();
+        }
+
         void FixedUpdate()
         {
             ApplyGravity();
@@ -79,6 +86,7 @@ namespace MyGame
         {
             rigidbody = GetComponent<Rigidbody>();
             colliders = GetComponents<Collider>();
+            animator = GetComponent<Animator>();
 
             audioSources = new AudioSource[maxPoolAudioSources];
 
@@ -87,6 +95,11 @@ namespace MyGame
                 audioSources[i] = gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
                 audioSources[i].playOnAwake = false;
             }
+        }
+
+        void AnimationHandler()
+        {
+            animator.SetBool("IsEmptyMagazine", IsEmptyMagazine);
         }
 
         void ApplyGravity()
@@ -142,6 +155,8 @@ namespace MyGame
                 {
                     Debug.Log("Shoot at nothing!");
                 }
+
+                animator.SetTrigger("PullTrigger");
             }
             else
             {

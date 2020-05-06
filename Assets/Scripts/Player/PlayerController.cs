@@ -240,11 +240,15 @@ namespace MyGame
                         lastHipFireTimeStamp = (Time.time + hipFireTimeDuration);
                         isHipFireWeapon = true;
 
+                        humaniodIK.ToggleHipFireWeapon(true);
+                    }
+                    else if (AimState.Aim == aimState)
+                    {
+                        lastFireTimeStamp = (Time.time + fireTimeDuration);
+                        isFireWeapon = true;
+
                         humaniodIK.ToggleFireWeapon(true);
                     }
-
-                    lastFireTimeStamp = (Time.time + fireTimeDuration);
-                    isFireWeapon = true;
 
                     hudInfo.currentMagazine = gun.AmmoInMagazine;
                     UpdateHUD(hudInfo);
@@ -423,12 +427,13 @@ namespace MyGame
             if (isFireWeapon && Time.time > lastFireTimeStamp)
             {
                 isFireWeapon = false;
+                humaniodIK.ToggleFireWeapon(false);
             }
 
             if (isHipFireWeapon && Time.time > lastHipFireTimeStamp)
             {
                 isHipFireWeapon = false;
-                humaniodIK.ToggleFireWeapon(false);
+                humaniodIK.ToggleHipFireWeapon(false);
             }
         }
 
@@ -559,7 +564,7 @@ namespace MyGame
 
         void SwitchGunSideHandler()
         {
-            if (!isFireWeapon)
+            if (!isHipFireWeapon)
             {
                 if (AimState.Aim == aimState && GunHand.Left == currentHand)
                 {
