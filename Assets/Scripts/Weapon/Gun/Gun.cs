@@ -45,7 +45,7 @@ namespace MyGame
         enum GunSound
         {
             PullTrigger,
-            PullTriggerWithEmptyMagazine,
+            DryFire,
             Reload
         }
 
@@ -115,7 +115,7 @@ namespace MyGame
             ammoInMagazine = (ammoInMagazine - total) < 0 ? 0 : (ammoInMagazine - total);
         }
 
-        void PlaySound(GunSound sound)
+        void PlaySound(GunSound sound, float delay = 0.0f)
         {
             foreach (AudioSource source in audioSources)
             {
@@ -123,7 +123,17 @@ namespace MyGame
                     continue;
                 
                 int i = (int) sound;
-                source.PlayOneShot(audioClips[i]);
+
+                if (delay > 0.0f)
+                {
+                    source.clip = audioClips[i];
+                    source.PlayDelayed(delay);
+                }
+                else
+                {
+                    source.PlayOneShot(audioClips[i]);
+                }
+
                 break;
             }
         }
@@ -147,6 +157,11 @@ namespace MyGame
                 RemoveAmmo(totalLostAmmoPerTrigger);
                 PlaySound(GunSound.PullTrigger);
 
+                if (IsEmptyMagazine)
+                {
+                    PlaySound(GunSound.DryFire, 0.25f);
+                }
+
                 if (Physics.Raycast(ray, out hitInfo, maxDistance, targetLayer))
                 {
                     Debug.Log("Shoot at: " + hitInfo.transform.name);
@@ -163,7 +178,7 @@ namespace MyGame
                 if (IsEmptyMagazine)
                 {
                     hitInfo = EmptyHitInfo;
-                    PlaySound(GunSound.PullTriggerWithEmptyMagazine);
+                    PlaySound(GunSound.DryFire);
                 }
             }
 
@@ -173,6 +188,11 @@ namespace MyGame
         public void PlayReloadSound()
         {
             PlaySound(GunSound.Reload);
+        }
+
+        public void PlayDryFireSound()
+        {
+            PlaySound(GunSound.DryFire);
         }
 
         public void Reload()

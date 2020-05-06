@@ -414,7 +414,7 @@ MonoBehaviour:
   maxPoolAudioSources: 6
   audioClips:
   - {fileID: 8300000, guid: 5a39b57657d4db04bbf5bcc72d544d8f, type: 3}
-  - {fileID: 8300000, guid: fa0903eaebd68894db32684bd4ffd391, type: 3}
+  - {fileID: 8300000, guid: 5831729c8ba542c498cb3761e2b051ca, type: 3}
   - {fileID: 8300000, guid: 13cea164e1a8f104abc2b9962c837d1e, type: 3}
   damage: 30
   fireRate: 0.19

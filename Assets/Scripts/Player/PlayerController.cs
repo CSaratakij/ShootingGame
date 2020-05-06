@@ -244,6 +244,8 @@ namespace MyGame
                     }
                     else if (AimState.Aim == aimState)
                     {
+                        animator.SetTrigger("Fire");
+
                         lastFireTimeStamp = (Time.time + fireTimeDuration);
                         isFireWeapon = true;
 
@@ -416,6 +418,7 @@ namespace MyGame
             animator.SetBool("IsAim", isAim);
             animator.SetBool("IsGround", characterController.isGrounded);
             animator.SetBool("IsHasWeapon", IsHasWeapon);
+            animator.SetBool("IsReloading", isStartReload);
             animator.SetFloat("MoveX", inputVector.x);
             animator.SetFloat("MoveZ", inputVector.z);
             animator.SetFloat("NonZeroMoveX", nonZeroMoveX);
