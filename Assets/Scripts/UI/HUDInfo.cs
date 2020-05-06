@@ -5,5 +5,7 @@
         public int health;
         public int currentMagazine;
         public int maxMagazine;
+        public bool IsHasWeapon;
+        public bool IsReloading;
     }
 }

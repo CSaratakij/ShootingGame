@@ -477,6 +477,36 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 350991687}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &522550170
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 522550171}
+  m_Layer: 0
+  m_Name: --- Status ---
+  m_TagString: EditorOnly
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &522550171
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522550170}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -640, y: -360, z: 0}
+  m_LocalScale: {x: 2.1052632, y: 2.1052632, z: 2.1052632}
+  m_Children: []
+  m_Father: {fileID: 666681749529155695}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &580153109
 GameObject:
   m_ObjectHideFlags: 0
@@ -506,6 +536,36 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &623069596
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 623069597}
+  m_Layer: 0
+  m_Name: PlayerStatus
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &623069597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 623069596}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 666681749529155695}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &640633337
 GameObject:
@@ -787,9 +847,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab30c254dd549dd4aaea934855b34002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  strHealthInfoFormat: H | {0}
+  healthCriticalLevel: 20
+  strHealthInfoFormat: H | <color={0}>{1}</color>
   lblHealthInfo: {fileID: 1113766850}
-  strMagazineInfoFormat: '{0} / {1}'
+  magazineCriticalLevel: 3
+  groupMagazine: {fileID: 1953003706}
+  strMagazineInfoFormat: <color={0}>{1}</color> / {2}
   lblMagazineInfo: {fileID: 640633339}
 --- !u!222 &1002111272
 CanvasRenderer:
@@ -1347,6 +1410,7 @@ GameObject:
   - component: {fileID: 1953003703}
   - component: {fileID: 1953003705}
   - component: {fileID: 1953003704}
+  - component: {fileID: 1953003706}
   m_Layer: 5
   m_Name: bgAmmo
   m_TagString: Untagged
@@ -1410,6 +1474,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1953003702}
   m_CullTransparentMesh: 0
+--- !u!225 &1953003706
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1953003702}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2074668531
 GameObject:
   m_ObjectHideFlags: 0
@@ -8724,6 +8800,8 @@ RectTransform:
   - {fileID: 666681748417487452}
   - {fileID: 666681749413706971}
   - {fileID: 666681748481145011}
+  - {fileID: 522550171}
+  - {fileID: 623069597}
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -11477,16 +11555,6 @@ PrefabInstance:
       propertyPath: aimReference
       value: 
       objectReference: {fileID: 144484232}
-    - target: {fileID: 4554959793865774049, guid: a90922e5f0c278147bd34f93a73bdf9c,
-        type: 3}
-      propertyPath: audioClips.Array.data[1]
-      value: 
-      objectReference: {fileID: 8300000, guid: 52fb157a833a52c4b8a7cbc8b290ae33, type: 3}
-    - target: {fileID: 4554959793865774049, guid: a90922e5f0c278147bd34f93a73bdf9c,
-        type: 3}
-      propertyPath: audioClips.Array.data[0]
-      value: 
-      objectReference: {fileID: 8300000, guid: a75744b009e07de49a08d56c864c1365, type: 3}
     - target: {fileID: 4554959793865774051, guid: a90922e5f0c278147bd34f93a73bdf9c,
         type: 3}
       propertyPath: m_LocalPosition.x

@@ -55,9 +55,12 @@ namespace MyGame
         public bool IsFireAble => (!IsEmptyMagazine) && (lastFireTimeStamp < Time.time);
         public bool IsEmptyMagazine => (ammoInMagazine <= 0);
         public bool IsFullMagazine => (ammoInMagazine >= maxAmmoInMagazine);
+        public bool IsHasOwner => isHasOwner;
 
         float lastFireTimeStamp = 0.0f;
         float delayAfterReloadedTimeStamp = 0.0f;
+
+        bool isHasOwner = false;
 
         Animator animator;
         AudioSource[] audioSources;
@@ -212,6 +215,8 @@ namespace MyGame
 
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+
+            isHasOwner = true;
         }
 
         public void Drop(Vector3 dropPosition)
@@ -226,6 +231,8 @@ namespace MyGame
             rigidbody.detectCollisions = true;
             rigidbody.isKinematic = false;
             rigidbody.useGravity = true;
+
+            isHasOwner = false;
         }
     }
 }

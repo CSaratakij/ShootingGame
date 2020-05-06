@@ -869,9 +869,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab30c254dd549dd4aaea934855b34002, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  strHealthInfoFormat: H | {0}
+  healthCriticalLevel: 20
+  strHealthInfoFormat: H | <color={0}>{1}</color>
   lblHealthInfo: {fileID: 536466736447662696}
-  strMagazineInfoFormat: '{0} / {1}'
+  magazineCriticalLevel: 3
+  groupMagazine: {fileID: 195990633307020131}
+  strMagazineInfoFormat: <color={0}>{1}</color> / {2}
   lblMagazineInfo: {fileID: 6609887881277303950}
 --- !u!1 &3494321334760403319
 GameObject:
@@ -884,6 +887,7 @@ GameObject:
   - component: {fileID: 667249829225292421}
   - component: {fileID: 8448952392641126265}
   - component: {fileID: 6499064055258737754}
+  - component: {fileID: 195990633307020131}
   m_Layer: 5
   m_Name: bgAmmo
   m_TagString: Untagged
@@ -947,6 +951,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!225 &195990633307020131
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3494321334760403319}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 0
+  m_BlocksRaycasts: 0
+  m_IgnoreParentGroups: 0
 --- !u!1 &4115198792510479879
 GameObject:
   m_ObjectHideFlags: 0
@@ -6841,7 +6857,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 9075779896115577663}
   m_HandleRect: {fileID: 9075779896115577656}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -6964,7 +6980,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 9075779896246631549}
   m_HandleRect: {fileID: 9075779896246631550}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:

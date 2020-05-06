@@ -118,6 +118,7 @@ namespace MyGame
         bool isStartRun = false;
         bool isStartReload = false;
 
+        bool isRunning = false;
         bool isSwitchCameraSide = false;
         bool isFireWeapon = false;
         bool isHipFireWeapon = false;
@@ -206,7 +207,7 @@ namespace MyGame
 
             inputVector.y = Input.GetButtonDown("Jump") ? 1.0f : 0.0f;
 
-            bool isRunning = (inputVector.sqrMagnitude > 0.0f) && (AimState.None == aimState) && Input.GetButton("Run");
+            isRunning = (inputVector.sqrMagnitude > 0.0f) && (AimState.None == aimState) && Input.GetButton("Run");
             moveSpeedMultipiler = isRunning ? runSpeedMultipiler : 1.0f;
 
             aimState = Input.GetButton("Fire2") ? AimState.Aim : AimState.None;
@@ -326,19 +327,24 @@ namespace MyGame
         void AnimationHandler()
         {
             bool isMove = Mathf.Abs(inputVector.x) > 0.0f || Mathf.Abs(inputVector.z) > 0.0f;
-            bool isAim = (AimState.Aim == aimState) && IsHasWeapon;
+            bool isAim = (AimState.Aim == aimState);
 
-            float moveAnimationMultipiler = moveSpeedMultipiler > 1.0f ? 1.1f : 1.0f;
+            float moveX = (isRunning) ? inputVector.x * 2.0f : inputVector.x;
+            float moveZ = (isRunning) ? inputVector.z * 2.0f : inputVector.z;
 
-            animator.SetFloat("MoveMultipiler", moveAnimationMultipiler);
+            float moveAnimationMultipiler = (moveSpeedMultipiler > 1.0f) ? 1.1f : 1.0f;
+
             animator.SetBool("IsPressShoot", isPressShoot);
             animator.SetBool("IsMove", isMove);
+            animator.SetBool("IsRun", isRunning);
             animator.SetBool("IsAim", isAim);
             animator.SetBool("IsGround", characterController.isGrounded);
             animator.SetBool("IsHasWeapon", IsHasWeapon);
             animator.SetBool("IsReloading", isStartReload);
-            animator.SetFloat("MoveX", inputVector.x);
-            animator.SetFloat("MoveZ", inputVector.z);
+
+            animator.SetFloat("MoveMultipiler", moveAnimationMultipiler);
+            animator.SetFloat("MoveX", moveX, 1.0f, Time.deltaTime * 10.0f);
+            animator.SetFloat("MoveZ", moveZ, 1.0f, Time.deltaTime * 10.0f);
             animator.SetFloat("NonZeroMoveX", nonZeroMoveX);
             animator.SetFloat("GunHandSide", currentHandIndex);
         }
@@ -575,29 +581,39 @@ namespace MyGame
 
                 bool isItemIsAGun = pickUpHitInfo.transform.gameObject.CompareTag("Gun");
 
-                if (isItemIsAGun)
+                if (!isItemIsAGun)
                 {
-                    gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
-
-                    if (gun)
-                    {
-                        var collider = gun.GetComponent<BoxCollider>();
-
-                        if (collider)
-                        {
-                            dummyCollider.center = collider.center;
-                            dummyCollider.size = collider.size;
-                        }
-
-                        gun.Pickup(gunHandSide[(int) GunHand.Right]);
-
-                        hudInfo.currentMagazine = gun.AmmoInMagazine;
-                        hudInfo.maxMagazine = gun.MaxAmmoInMagazine;
-
-                        UpdateHUD(hudInfo);
-                        PlaySFXSound(SFX.Pickup);
-                    }
+                    return;
                 }
+
+                gun = pickUpHitInfo.transform.gameObject.GetComponent<Gun>();
+
+                if (gun == null)
+                {
+                    return;
+                }
+
+                if (gun.IsHasOwner)
+                {
+                    return;
+                }
+
+                var collider = gun.GetComponent<BoxCollider>();
+
+                if (collider)
+                {
+                    dummyCollider.center = collider.center;
+                    dummyCollider.size = collider.size;
+                }
+
+                gun.Pickup(gunHandSide[(int) GunHand.Right]);
+
+                hudInfo.currentMagazine = gun.AmmoInMagazine;
+                hudInfo.maxMagazine = gun.MaxAmmoInMagazine;
+                hudInfo.IsHasWeapon = IsHasWeapon;
+
+                UpdateHUD(hudInfo);
+                PlaySFXSound(SFX.Pickup);
             }
         }
 
@@ -662,6 +678,7 @@ namespace MyGame
 
             hudInfo.currentMagazine = 0;
             hudInfo.maxMagazine = 0;
+            hudInfo.IsHasWeapon = IsHasWeapon;
 
             UpdateHUD(hudInfo);
         }
@@ -676,6 +693,9 @@ namespace MyGame
 
                 animator.SetTrigger("Reload");
                 gun.PlayReloadSound();
+
+                hudInfo.IsReloading = isStartReload;
+                UpdateHUD(hudInfo);
             }
         }
 
@@ -685,6 +705,8 @@ namespace MyGame
             isStartReload = false;
 
             hudInfo.currentMagazine = gun.AmmoInMagazine;
+            hudInfo.IsReloading = isStartReload;
+
             UpdateHUD(hudInfo);
         }
 

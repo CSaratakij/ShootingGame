@@ -307,9 +307,9 @@ MonoBehaviour:
   - {fileID: 2396974354351871867}
   - {fileID: 2396974353727091863}
   audioClips:
-  - {fileID: 8300000, guid: 52fb157a833a52c4b8a7cbc8b290ae33, type: 3}
   - {fileID: 8300000, guid: a75744b009e07de49a08d56c864c1365, type: 3}
-  moveSpeed: 6
+  - {fileID: 8300000, guid: 52fb157a833a52c4b8a7cbc8b290ae33, type: 3}
+  moveSpeed: 5
   runSpeedMultipiler: 1.5
   jumpSpeed: 12
   gravity: 40
