@@ -141,6 +141,7 @@ namespace MyGame
                 uIController.ShowLoadingScreen();
                 SceneLoader.LoadScene(SceneIndex.RangePractice, () => {
                     uIController.ShowInGameMenu();
+                    GameClient.Instance?.ConnectToGameServer();
                 });
             });
 

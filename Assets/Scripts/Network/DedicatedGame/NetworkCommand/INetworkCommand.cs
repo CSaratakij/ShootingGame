@@ -11,10 +11,12 @@ namespace MyGame.Network
 {
     public enum NetworkCommand : byte
     {
-        SyncPosition = 1,
-        SyncRotation = 2,
-        SendMessage = 3,
-        SpawnResponse = 4
+        PlayerConnected = 1,
+        SyncPosition = 2,
+        SyncRotation = 3,
+        SyncPlayerStatus = 4,
+        SendMessage = 5,
+        PlayerDisconnected = 6
     }
 
     public interface INetworkCommand

@@ -156,7 +156,7 @@ namespace MyGame
         void ZoomHandler()
         {
             currentZoomFOV = Mathf.MoveTowards(currentZoomFOV, targetZoomFOV, zoomRate * Time.deltaTime);
-            Camera.main.fieldOfView = currentZoomFOV;
+            _camera.fieldOfView = currentZoomFOV;
         }
 
         public void SetZoomFOV(float normalFOV, float zoomFOV)

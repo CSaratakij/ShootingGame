@@ -363,6 +363,7 @@ GameObject:
   - component: {fileID: 1880117176}
   - component: {fileID: 2571009248101375607}
   - component: {fileID: 1492112104}
+  - component: {fileID: 6578086339437327108}
   m_Layer: 9
   m_Name: HandgunM1911AScaled
   m_TagString: Gun
@@ -460,6 +461,20 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &6578086339437327108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3343340572129491856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 187209f23b067234fa2a5e6607eab30b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isEnable: 1
+  syncType: -1
 --- !u!1 &3343340572468196397
 GameObject:
   m_ObjectHideFlags: 0

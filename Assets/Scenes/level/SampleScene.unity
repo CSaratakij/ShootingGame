@@ -402,7 +402,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1313606451
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -474,7 +474,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc5a97c3b59c3d042bcb4e08ae18430c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ip: 0.0.0.0
+  ip: localhost
   port: 27015
   maxClient: 8
 --- !u!1001 &7288630584843130076

@@ -81,6 +81,8 @@ namespace MyGame.Network
 
         void Initialize()
         {
+            //todo: parse command line argument of -port here..
+
             Application.targetFrameRate = 30;
             QualitySettings.vSyncCount = 1;
 
@@ -129,14 +131,18 @@ namespace MyGame.Network
 
                 case EventType.Connect:
                     Debug.Log("Client connected - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP);
+                    BroadcastPlayerConnect(ref netEvent);
+                    //todo: broadcast other player here?
                     break;
 
                 case EventType.Disconnect:
                     Debug.Log("Client disconnected - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP);
+                    BroadcastPlayerDisconnect(ref netEvent);
                     break;
 
                 case EventType.Timeout:
                     Debug.Log("Client timeout - ID: " + netEvent.Peer.ID + ", IP: " + netEvent.Peer.IP);
+                    BroadcastPlayerDisconnect(ref netEvent);
                     break;
 
                 case EventType.Receive:
@@ -168,28 +174,86 @@ namespace MyGame.Network
             OnNetworkCommand(e, command, reader);
         }
 
+        void BroadcastPlayerConnect(ref Event e)
+        {
+            uint id = e.Peer.ID;
+            NetworkEntityTable.Instance?.AddEntity(id);
+
+            var bufSize = sizeof(byte) + sizeof(uint);
+            var buffer = new byte[bufSize];
+
+            var stream = new MemoryStream(buffer);
+            var writer = new BinaryWriter(stream);
+
+            byte commandID = (byte) NetworkCommand.PlayerConnected;
+
+            writer.Write(commandID);
+            writer.Write(id);
+
+            Send(0, buffer);
+        }
+
+        void BroadcastPlayerDisconnect(ref Event e)
+        {
+            uint id = e.Peer.ID;
+            NetworkEntityTable.Instance?.RemoveEntity(id);
+
+            var bufSize = sizeof(byte) + sizeof(uint);
+            var buffer = new byte[bufSize];
+
+            var stream = new MemoryStream(buffer);
+            var writer = new BinaryWriter(stream);
+
+            byte commandID = (byte) NetworkCommand.PlayerDisconnected;
+
+            writer.Write(commandID);
+            writer.Write(id);
+
+            Send(0, buffer);
+        }
+
         public void Send(byte channelID, byte[] data, Action<bool> callback = null)
         {
-            // var packet = default(Packet);
-            // packet.Create(data);
-
-            // peer.Send(channelID, ref packet);
-
-            // callback?.Invoke(true);
+            var packet = default(Packet);
+            packet.Create(data);
+            server.Broadcast(channelID, ref packet);
         }
 
         public void OnNetworkCommand(Event e, NetworkCommand command, BinaryReader reader)
         {
-            Debug.Log("Get Command : " + command.ToString());
-
             switch (command)
             {
+                case NetworkCommand.SyncPosition:
+                {
+                    var sender = e.Peer.ID;
+                    Vector3 position = Vector3.zero;
+
+                    position.x = reader.ReadSingle();
+                    position.y = reader.ReadSingle();
+                    position.z = reader.ReadSingle();
+
+                    var bufSize = sizeof(byte) + sizeof(uint) + sizeof(float) + sizeof(float) + sizeof(float) + 1;
+                    InitWriter(bufSize);
+
+                    writer.Write((byte) command);
+                    writer.Write(sender);
+                    writer.Write(position.x);
+                    writer.Write(position.y);
+                    writer.Write(position.z);
+
+                    Debug.Log("Receive : " + position);
+
+                    var packet = default(Packet);
+                    packet.Create(buffer);
+
+                    server.Broadcast(0, ref packet);
+                }
+                break;
+
                 case NetworkCommand.SendMessage:
                 {
                     var sender = e.Peer.ID;
                     var message = reader.ReadString();
-
-                    Debug.Log("Receive message : " + message);
 
                     var bufSize = sizeof(byte) + sizeof(uint) + Encoding.Default.GetByteCount(message) + 1;
                     InitWriter(bufSize);

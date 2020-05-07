@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MyGame.Network;
 
 namespace MyGame
 {
@@ -25,7 +26,7 @@ namespace MyGame
         bool isStopProcessInput;
 
         [SerializeField]
-        NetworkType networkType;
+        Camera rawCamera;
 
         [SerializeField]
         Transform dropItemRef;
@@ -142,6 +143,7 @@ namespace MyGame
         int currentHandIndex = (int) GunHand.Right;
 
         Collider[] penetrationBuffer;
+        NetworkEntity networkEntity;
 
         void Awake()
         {
@@ -159,6 +161,7 @@ namespace MyGame
             else
             {
                 humaniodIK.DisableRotateY(true);
+                rawCamera.enabled = false;
             }
 
             //Test
@@ -167,6 +170,12 @@ namespace MyGame
 
         void Update()
         {
+            //Test
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ToggleCursor();
+            }
+
             InputHandler();
             MoveHandler();
         }
@@ -177,20 +186,24 @@ namespace MyGame
             SwitchGunSideHandler();
             FacingHandler();
             AnimationHandler();
+            NetworkSyncHandler();
         }
 
         void Initialize()
         {
-            camera = Camera.main.GetComponent<ThirdPersonCamera>();
+            camera = rawCamera.GetComponent<ThirdPersonCamera>();
             characterController = GetComponent<CharacterController>();
 
             audioSource = GetComponent<AudioSource>();
+            networkEntity = GetComponent<NetworkEntity>();
 
             rotationBasis = camera.ExternalBasis;
             penetrationBuffer = new Collider[MAX_PENETRATION_TEST_BUFFER_SIZE];
 
             dummyCollider.enabled = false;
             dummyCollider.isTrigger = true;
+
+            rawCamera.transform.parent = null;
         }
 
         void InputHandler()
@@ -415,6 +428,13 @@ namespace MyGame
             Cursor.visible = value;
         }
 
+        void ToggleCursor()
+        {
+            bool isShow = (Cursor.lockState == CursorLockMode.None);
+            isShow = !isShow;
+            ShowCursor(isShow);
+        }
+
         void FacingHandler()
         {
             bool shouldFacingBasis = (inputVector.sqrMagnitude > 0.0f) || (AimState.Aim == aimState);
@@ -543,6 +563,15 @@ namespace MyGame
                 default:
                 break;
             }
+        }
+
+        void NetworkSyncHandler()
+        {
+            // if (networkEntity == null)
+            //     return;
+            
+            // networkEntity.SyncPosition(transform.position);
+            // networkEntity.SyncRotation(transform.rotation);
         }
 
         void SetGunSide(GunHand side)
@@ -749,6 +778,24 @@ namespace MyGame
         public void StopProcessInput(bool value = true)
         {
             isStopProcessInput = value;
+        }
+
+        public void EnableControl(bool value = true)
+        {
+            isControlable = value;
+            isStopProcessInput = !value;
+        }
+
+        public void DestroyCompletely()
+        {
+            if (IsHasWeapon)
+            {
+                DropCurrentGun();
+            }
+
+            Destroy(rawCamera.gameObject);
+            Destroy(rotationBasis.gameObject);
+            Destroy(gameObject);
         }
     }
 }

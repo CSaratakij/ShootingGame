@@ -13,6 +13,8 @@ namespace MyGame.Network
     [DisallowMultipleComponent]
     public sealed class GameClient : MonoBehaviour, INetworkCommand
     {
+        public static GameClient Instance = null;
+
         [SerializeField]
         string ip = "localhost";
 
@@ -39,7 +41,7 @@ namespace MyGame.Network
             {
                 if (GUILayout.Button("Disconnect"))
                 {
-                    peer.DisconnectNow(0);
+                    peer.Disconnect(0);
                 }
 
                 if (GUILayout.Button("SE"))
@@ -59,6 +61,7 @@ namespace MyGame.Network
 
         void Awake()
         {
+            MakeSingleton();
             Initialize();
         }
 
@@ -70,6 +73,19 @@ namespace MyGame.Network
         void OnDestroy()
         {
             CleanUp();
+        }
+
+        void MakeSingleton()
+        {
+            if (Instance)
+            {
+                Destroy(gameObject);
+            }
+            else
+            {
+                Instance = this;
+                DontDestroyOnLoad(gameObject);
+            }
         }
 
         void Initialize()
@@ -89,7 +105,7 @@ namespace MyGame.Network
             client.Create();
 
             //Test
-            peer = client.Connect(address);
+            // peer = client.Connect(address);
         }
 
         void InitWriter(int size)
@@ -123,16 +139,17 @@ namespace MyGame.Network
 
                 case EventType.Connect:
                     Debug.Log("Client connected to server");
-                    //todo: try send message
-                    SendTestMessage();
+                    HandleClientConnected(ref netEvent);
                     break;
 
                 case EventType.Disconnect:
                     Debug.Log("Client disconnected from server");
+                    HandleClientDisconnected();
                     break;
 
                 case EventType.Timeout:
                     Debug.Log("Client connection timeout");
+                    HandleClientTimeout();
                     break;
 
                 case EventType.Receive:
@@ -164,6 +181,39 @@ namespace MyGame.Network
             OnNetworkCommand(e, command, reader);
         }
 
+        void HandleClientConnected(ref Event e)
+        {
+            SetOwnerID(e.Peer.ID);
+        }
+
+        void HandleClientDisconnected()
+        {
+            SetOwnerID(peer.ID, false);
+        }
+
+        void HandleClientTimeout()
+        {
+            SetOwnerID(peer.ID, false);
+        }
+
+        void SetOwnerID(uint id, bool isConnected = true)
+        {
+            if (NetworkEntityTable.Instance)
+            {
+                NetworkEntityTable.Instance.OwnerID = id;
+                NetworkEntityTable.Instance.IsOwnerConnected = isConnected;
+
+                if (isConnected)
+                {
+                    NetworkEntityTable.Instance.AddEntity(id);
+                }
+                else
+                {
+                    NetworkEntityTable.Instance.ResetTable();
+                }
+            }
+        }
+
         void SendTestMessage()
         {
             var message = "Hello World";
@@ -187,6 +237,52 @@ namespace MyGame.Network
             });
         }
 
+        public void SendPositionUpdate()
+        {
+            var table = NetworkEntityTable.Instance;
+
+            if (table == null)
+                return;
+
+            var id = NetworkEntityTable.Instance.OwnerID;
+            NetworkEntity entity;
+
+            if (table.Item.TryGetValue(id, out entity))
+            {
+                Vector3 position = entity.transform.position;
+
+                var bufSize = sizeof(byte) + sizeof(uint) + sizeof(float) + sizeof(float) + sizeof(float) + 1;
+                var buffer = new byte[bufSize];
+
+                var stream = new MemoryStream(buffer);
+                var writer = new BinaryWriter(stream);
+
+                byte commandID = (byte) NetworkCommand.SyncPosition;
+
+                writer.Write(commandID);
+                writer.Write(id);
+                writer.Write(position.x);
+                writer.Write(position.y);
+                writer.Write(position.z);
+
+                Send(0, buffer, (error) => {
+                    if (error)
+                    {
+                        Debug.Log("Not connected...");
+                    }
+                });
+            }
+            else
+            {
+                Debug.Log("Owner id not in the entity table..");
+            }
+        }
+
+        public void SendRotationUpdate()
+        {
+            //todo:
+        }
+
         public void Send(byte channelID, byte[] data, Action<bool> callback = null)
         {
             if (PeerState.Connected != peer.State)
@@ -202,12 +298,83 @@ namespace MyGame.Network
             callback?.Invoke(false);
         }
 
+        public void ConnectToGameServer()
+        {
+            peer = client.Connect(address);
+        }
+
+        public void ConnectToGameServer(string ip, ushort port)
+        {
+            address.SetHost(ip);
+            address.Port = port;
+            peer = client.Connect(address);
+        }
+
         public void OnNetworkCommand(Event e, NetworkCommand command, BinaryReader reader)
         {
             Debug.Log("Get Command : " + command.ToString());
 
             switch (command)
             {
+                case NetworkCommand.PlayerConnected:
+                {
+                    var id = reader.ReadUInt32();
+
+                    if (id == NetworkEntityTable.Instance.OwnerID)
+                        return;
+
+                    var table = NetworkEntityTable.Instance;
+
+                    if (table == null)
+                        return;
+                    
+                    table.AddEntity(id);
+                }
+                break;
+
+                case NetworkCommand.PlayerDisconnected:
+                {
+                    var id = reader.ReadUInt32();
+                    var table = NetworkEntityTable.Instance;
+
+                    if (table == null)
+                        return;
+                    
+                    table.RemoveEntity(id);
+                }
+                break;
+
+                case NetworkCommand.SyncPosition:
+                {
+                    var id = reader.ReadUInt32();
+
+                    if (id == NetworkEntityTable.Instance.OwnerID)
+                        return;
+
+                    var table = NetworkEntityTable.Instance;
+
+                    if (table == null)
+                        return;
+
+                    Vector3 position = Vector3.zero;
+
+                    position.x = reader.ReadSingle();
+                    position.y = reader.ReadSingle();
+                    position.z = reader.ReadSingle();
+
+                    NetworkEntity entity;
+
+                    if (table.Item.TryGetValue(id, out entity))
+                    {
+                        entity.SyncPosition(position);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find the specified key.");
+                    }
+                }
+                break;
+
                 case NetworkCommand.SendMessage:
                 {
                     var sender = reader.ReadUInt32();
